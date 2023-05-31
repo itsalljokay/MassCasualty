@@ -9,11 +9,13 @@ from scipy.stats import lognorm
 import pandas
 import simpy
 
+#Class representing...
 #VARIABLES AND PARAMETERS
+#Global variables and a parameters are tweaked here.
 class VariablesAndParameters:
     #Sim Details
-    warm_up = 120
-    number_of_runs = 200
+    warm_up = 3
+    number_of_runs = 10
     run_number = 0
 
     #People Involved
@@ -65,16 +67,17 @@ class VariablesAndParameters:
     green_time_in_aux_treatment_area = []
     black_time_in_other_location = []
 
-#MARINE
+#Class representing...
+#A MARINE
 #We pass it the number held in marine_counter to use as the ID.
 class InstanceOfMarine:
     #ID and Time In System
-    def __init__(self, id):
-        self.id = id
+    def __init__(self, marine_counter):
+        self.marine_counter = marine_counter
         self.time_in_system_start = 0
 
         #DEBUGGING
-        print("ID: ", self.id)
+        print("ID: ", self.marine_counter)
         print("Start Time In System: ", self.time_in_system_start)
 
         #Give Them Priority Number and Color
@@ -123,7 +126,10 @@ class InstanceOfMarine:
         #DEBUGGING
         print("Triage Color: ", self.triage_color)
 
-#TRACKING DATA
+
+#Class representing...
+#DATA
+#Where we put data as the simulation runs.
 class Track:
     time_spent_in_system = []
 
@@ -188,38 +194,6 @@ class Track:
     #Organize By ID
     results_df.set_index("ID", inplace=True)
 
-    #Calculate Data
-    #Count Up Marine IDs To Inform Total Marines
-    """
-    def calculate_total_marines_at_locations():
-        if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-            #Get How Many Keys Are In total_marines_at_locations_dictionary
-            i = len(Track.total_marines_at_locations_dictionary.keys)
-
-            #For Each Entry, Add Up The Amount of IDs Present in the individual_marines_at_location_dictionary for each index.
-            #Add that total to the total_marines_at_location_dictionary at the same index you calculated at.
-            for i in Track.total_marines_at_locations_dictionary:
-                Track.total_marines_at_locations_dictionary[i].append(len(Track.individual_marines_at_locations_dictionary[i]))
-
-        #FOR DEBUGGING
-        print("DEBUGGING")
-        print("Individual Marines At Location Dictionary Values:", Track.individual_marines_at_locations_dictionary.values())
-        print("Total Marines At Location Dictionary Values:", Track.total_marines_at_locations_dictionary.values())
-
-    #Calculate How Many Of Each Color-Code We Had       
-    def calculate_priority_count():
-        if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-        #Get How Many Keys Are In total_priority_count_dictionary
-            i = len(Track.total_priority_count_dictionary.keys)
-
-        for i in Track.total_priority_count_dictionary:
-            Track.total_priority_count_dictionary[i].append(len(Track.individiual_marines_priority_count_dictionary[i]))
-
-        #FOR DEBUGGING
-        print("DEBUGGING")
-        print("Individual Marines By Priority Count:", Track.individiual_marines_priority_count_dictionary.values())
-        print("Total Marines By Priority Count:", Track.total_priority_count_dictionary.values())
-        """
     #Calculate Average Wait By Locations
     def calculate_average_time_at_locations():
         if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
@@ -233,13 +207,15 @@ class Track:
         print("Individual Times At Locations:", Track.individual_times_at_locations_dictionary.values())
         print("Average Times At Locations:", Track.average_times_at_locations_dictionary.values())
 
-#SYSTEM
+#Class representing...
+#MASS CASUALTY TRIAGE
+#How things are actually being gonkulated.
 class MassCasualtySystem:
     #Setup The Simulation Environment
 
     def __init__(self):
-        #Define Our Simulation Resources
         self.env = simpy.Environment()
+        #Define Our Simulation Resources
         #People
         self.initial_triage_resource_definition = simpy.PriorityResource(self.env, capacity = VariablesAndParameters.number_of_water_pickup_triage_personnel)
         self.red_doctor_resource_definition = simpy.PriorityResource(self.env, capacity = VariablesAndParameters.number_of_red_dedicated_doctors)
@@ -252,48 +228,12 @@ class MassCasualtySystem:
         self.holding_area_resource_definition = simpy.PriorityResource(self.env, capacity = VariablesAndParameters.holding_area_maximum_occupancy)
         self.aux_treatment_area_resource_definition = simpy.Resource(self.env, capacity = VariablesAndParameters.auxillary_treatment_area_maximum_occupancy)
         self.other_location_resource_definition = simpy.Resource(self.env, capacity = VariablesAndParameters.other_location_maximum_occupancy)
-
-    """
-    def resource_requests(self):
-        #People
-        self.initial_triage_water_pickup_request = self.initial_triage_resource_definition.request()
-        self.red_doctor_request = self.red_doctor_resource_definition.request()
-        self.yellow_doctor_request = self.yellow_doctor_resource_definition.request()
-        self.green_corpsman_request = self.green_corpsman_resource_definition.request()
-        self.black_corpsman_request = self.black_corpsman_resource_definition.request()
-
-        #Locations
-        self.main_bds_request = self.main_bds_resource_definition.request()
-        self.holding_area_request = self.holding_area_resource_definition.request()
-        self.aux_treatment_request = self.aux_treatment_area_resource_definition.request()
-        self.other_location_request = self.other_location_resource_definition.request()
-
-    """
-    """
-    def generate_marine_and_start(self):
-        #Generate Marine
-        self.marine = InstanceOfMarine(VariablesAndParameters.marine_counter)
-
-        #Add Marine To Initial Triage Location
-        #Track.individual_marines_at_locations_dictionary[0].append(VariablesAndParameters.marine_counter)
-
-        #Decide How Long Until We Generate The Next Marine
-        self.sampled_interarrival = numpy.random.exponential(VariablesAndParameters.interarrival_mean)
-
-        #Start Rescue Process For Original Marine
-        self.env.process(self.pickup_and_care_procedures())
-
-        #Wait For Random (Within Average) Amount of Time Before Generating Next Marine
-        #yield self.env.timeout(self.sampled_interarrival)
-    """
+   
     def pickup_and_care_procedures(self):
         #IMPORTANT NOTE TO SELF: regular yield is for events (like resources). Yield timeout is for duration (units of time)
         while VariablesAndParameters.run_number < VariablesAndParameters.number_of_runs:
             #Generate Marine
             self.marine = InstanceOfMarine(VariablesAndParameters.marine_counter)
-
-            #Add Marine To Initial Triage Location
-            #Track.individual_marines_at_locations_dictionary[0].append(VariablesAndParameters.marine_counter)
 
             #Decide How Long Until We Generate The Next Marine
             self.sampled_interarrival = numpy.random.exponential(VariablesAndParameters.interarrival_mean)
@@ -668,23 +608,11 @@ class MassCasualtySystem:
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["With Black Dedicated Corpsman"].append(self.black_corpsman_care_elapsed_time)
                     print("Elapsed Time Values: ", Track.individual_times_at_locations_dictionary.values()) 
+        
+        VariablesAndParameters.run_number += 1
 
-            VariablesAndParameters.run_number += 1
-
-    def run(self):
-        self.total_runs_including_warmup = (VariablesAndParameters.warm_up + VariablesAndParameters.number_of_runs)
-        print("Total Number of Runs: ", self.total_runs_including_warmup)
-        self.env.process(self.pickup_and_care_procedures())
-        self.env.run(until=self.total_runs_including_warmup)
-
-#RUN TIME
-instance = MassCasualtySystem()
-instance.run()
-
-#COMPILING DATA
-
-
-
-
-    
-
+#RUNNING THE SYSTEM
+total_runs = VariablesAndParameters.warm_up + VariablesAndParameters.number_of_runs
+model = MassCasualtySystem()
+model.env.process(model.pickup_and_care_procedures())
+model.env.run(until=total_runs)
