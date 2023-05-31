@@ -17,6 +17,9 @@ class VariablesAndParameters:
     warm_up = 3
     number_of_runs = 10
     run_number = 0
+    duration_of_simulation_in_minutes = 20
+    simulation_time = (duration_of_simulation_in_minutes * 60)
+    #SIMULATION TIME IS IN SECONDS
 
     #People Involved
     #We are calculating how many Marines we can handle before resources are swamped or strained. Therefore, marine_counter starts and stays at 0.
@@ -609,7 +612,6 @@ class MassCasualtySystem:
         VariablesAndParameters.run_number += 1
 
 #RUNNING THE SYSTEM
-total_runs = VariablesAndParameters.warm_up + VariablesAndParameters.number_of_runs
 model = MassCasualtySystem()
 model.env.process(model.pickup_and_care_procedures())
-model.env.run()
+model.env.run(until=VariablesAndParameters.simulation_time)
