@@ -102,25 +102,25 @@ class InstanceOfMarine:
             self.triage_color = "Red"
             #Add To Data
         if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-            Track.individiual_marines_priority_count_dictionary["Red"].append(self.triage_color)
+            Track.individiual_marines_priority_count_dictionary["Priority 1: Red"].append(self.triage_color)
             print("Current Individual Priority Count Values", Track.individiual_marines_priority_count_dictionary.values())
         if self.set_priority_number == 2:
             self.triage_color = "Yellow"
             #Add To Data
         if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-            Track.individiual_marines_priority_count_dictionary["Yellow"].append(self.triage_color)
+            Track.individiual_marines_priority_count_dictionary["Priority 2: Yellow"].append(self.triage_color)
             print("Current Individual Priority Count Values", Track.individiual_marines_priority_count_dictionary.values())
         if self.set_priority_number == 3:
             self.triage_color = "Green"
             #Add To Data
         if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-            Track.individiual_marines_priority_count_dictionary["Green"].append(self.triage_color)
+            Track.individiual_marines_priority_count_dictionary["Priority 3: Green"].append(self.triage_color)
             print("Current Individual Priority Count Values", Track.individiual_marines_priority_count_dictionary.values())
         if self.set_priority_number == 4:
             self.triage_color = "Black"
             #Add To Data
             if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                Track.individiual_marines_priority_count_dictionary["Black"].append(self.triage_color)
+                Track.individiual_marines_priority_count_dictionary["Priority 4: Black"].append(self.triage_color)
                 ("Current Individual Priority Count Values", Track.individiual_marines_priority_count_dictionary.values())
 
         #DEBUGGING
@@ -258,7 +258,6 @@ class MassCasualtySystem:
             print("Calculation of Initial Triage Duration: ", self.sampled_triage_time)
 
             #Wait For That Initial Triage Time
-            #If uncommented, simulation will not move beyond this point.
             yield self.env.timeout(self.sampled_triage_time)
 
             #End Initial Triage Timer
@@ -280,7 +279,7 @@ class MassCasualtySystem:
             #CARE BY TRIAGE PRIORITY/COLOR-CODE
 
             #RED
-            if self.marine.triage_color == "Red":
+            if self.marine.triage_color == "Red" or "Yellow" or "Green" or "Black":
                 #LOCATION
                 #Start Red Location Timer
                 self.red_main_bds_location_timer_start = self.env.now
@@ -346,7 +345,6 @@ class MassCasualtySystem:
 
                 #Wait That Amount of Care Time
                 #BUG
-                #Uncommenting will cause system to crash
                 yield self.env.timeout(red_care_time)
 
                 #Stop Care Timer
@@ -362,6 +360,7 @@ class MassCasualtySystem:
                     Track.individual_times_at_locations_dictionary["With Red Dedicated Doctor"].append(self.red_doctor_care_elapsed_time)
                     print("Elapsed Time Values: ", Track.individual_times_at_locations_dictionary.values())
 
+            """
             #YELLOW
             if self.marine.triage_color == "Yellow":
                 #LOCATION
@@ -609,10 +608,11 @@ class MassCasualtySystem:
                     Track.individual_times_at_locations_dictionary["With Black Dedicated Corpsman"].append(self.black_corpsman_care_elapsed_time)
                     print("Elapsed Time Values: ", Track.individual_times_at_locations_dictionary.values()) 
         
+            """
         VariablesAndParameters.run_number += 1
 
 #RUNNING THE SYSTEM
 total_runs = VariablesAndParameters.warm_up + VariablesAndParameters.number_of_runs
 model = MassCasualtySystem()
 model.env.process(model.pickup_and_care_procedures())
-model.env.run(until=total_runs)
+model.env.run()
