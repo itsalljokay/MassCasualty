@@ -279,7 +279,7 @@ class MassCasualtySystem:
             #CARE BY TRIAGE PRIORITY/COLOR-CODE
 
             #RED
-            if self.marine.triage_color == "Red" or "Yellow" or "Green" or "Black":
+            if self.marine.triage_color == "Red":
                 #LOCATION
                 #Start Red Location Timer
                 self.red_main_bds_location_timer_start = self.env.now
@@ -344,7 +344,6 @@ class MassCasualtySystem:
                 print("Red Care Calculated Time: ", red_care_time) 
 
                 #Wait That Amount of Care Time
-                #BUG
                 yield self.env.timeout(red_care_time)
 
                 #Stop Care Timer
@@ -360,7 +359,6 @@ class MassCasualtySystem:
                     Track.individual_times_at_locations_dictionary["With Red Dedicated Doctor"].append(self.red_doctor_care_elapsed_time)
                     print("Elapsed Time Values: ", Track.individual_times_at_locations_dictionary.values())
 
-            """
             #YELLOW
             if self.marine.triage_color == "Yellow":
                 #LOCATION
@@ -441,7 +439,7 @@ class MassCasualtySystem:
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["With Yellow Dedicated Doctor"].append(self.yellow_doctor_care_elapsed_time)
                     print("Elapsed Time Values: ", Track.individual_times_at_locations_dictionary.values())
-
+            
             #GREEN
             if self.marine.triage_color == "Green":
                 #LOCATION
@@ -607,8 +605,7 @@ class MassCasualtySystem:
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["With Black Dedicated Corpsman"].append(self.black_corpsman_care_elapsed_time)
                     print("Elapsed Time Values: ", Track.individual_times_at_locations_dictionary.values()) 
-        
-            """
+
         VariablesAndParameters.run_number += 1
 
 #RUNNING THE SYSTEM
