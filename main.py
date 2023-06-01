@@ -17,7 +17,7 @@ class VariablesAndParameters:
     warm_up = 3
     number_of_runs = 10
     run_number = 0
-    duration_of_simulation_in_minutes = 20
+    duration_of_simulation_in_minutes = 5
     simulation_time = (duration_of_simulation_in_minutes * 60)
     #SIMULATION TIME IS IN SECONDS
 
@@ -39,7 +39,7 @@ class VariablesAndParameters:
     #How Long It Takes To Do Things
     #Gonna want to mess around with a lognormal calculator and see what some acceptable samples could be.
     interarrival_mean = 1
-    water_pickup_triage_mean_time = 1
+    water_pickup_triage_mean_time = 1.2
     water_pickup_triage_stdev_time = 1
     red_mean_doctor_main_bds_consultation = 4
     red_stdev_doctor_main_bds_consultation = 1
@@ -240,7 +240,8 @@ class MassCasualtySystem:
 
             #Decide How Long Until We Generate The Next Marine
             self.sampled_interarrival = numpy.random.exponential(VariablesAndParameters.interarrival_mean)
-
+            print("Time Till Next Marine: ", self.sampled_interarrival)
+        
             #Wait For Random (Within Average) Amount of Time Before Generating Next Marine
             yield self.env.timeout(self.sampled_interarrival)
 
@@ -611,7 +612,21 @@ class MassCasualtySystem:
 
         VariablesAndParameters.run_number += 1
 
+#Class representing...
+#CALCULATIONS
+#The putting together the outputs of the gonkulator.
+class Calculations:
+    def total_priority_counts():
+        for key in Track.total_priority_count_dictionary:
+            total = sum(Track.individiual_marines_priority_count_dictionary[key])
+            Track.total_priority_count_dictionary[key].append(total)
+        print(Track.total_priority_count_dictionary)
+
 #RUNNING THE SYSTEM
 model = MassCasualtySystem()
 model.env.process(model.pickup_and_care_procedures())
 model.env.run(until=VariablesAndParameters.simulation_time)
+
+#CALCULATIONS
+print("Priority Counter:")
+print(Track.individiual_marines_priority_count_dictionary.values())
