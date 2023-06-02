@@ -105,27 +105,26 @@ class InstanceOfMarine:
             self.triage_color = "Red"
             #Add To Data
         if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-            Track.individiual_marines_priority_count_dictionary["Priority 1: Red"].append(self.triage_color)
-            print("Current Individual Priority Count Values", Track.individiual_marines_priority_count_dictionary.values())
+            Track.individiual_marines_priority_count_dictionary["Priority 1: Red"].append(self.marine_counter)
+            
         if self.set_priority_number == 2:
             self.triage_color = "Yellow"
             #Add To Data
         if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-            Track.individiual_marines_priority_count_dictionary["Priority 2: Yellow"].append(self.triage_color)
-            print("Current Individual Priority Count Values", Track.individiual_marines_priority_count_dictionary.values())
+            Track.individiual_marines_priority_count_dictionary["Priority 2: Yellow"].append(self.marine_counter)
+            
         if self.set_priority_number == 3:
             self.triage_color = "Green"
             #Add To Data
         if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-            Track.individiual_marines_priority_count_dictionary["Priority 3: Green"].append(self.triage_color)
-            print("Current Individual Priority Count Values", Track.individiual_marines_priority_count_dictionary.values())
+            Track.individiual_marines_priority_count_dictionary["Priority 3: Green"].append(self.marine_counter)
+            
         if self.set_priority_number == 4:
             self.triage_color = "Black"
             #Add To Data
             if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                Track.individiual_marines_priority_count_dictionary["Priority 4: Black"].append(self.triage_color)
-                ("Current Individual Priority Count Values", Track.individiual_marines_priority_count_dictionary.values())
-
+                Track.individiual_marines_priority_count_dictionary["Priority 4: Black"].append(self.marine_counter)
+                
         #DEBUGGING
         print("Triage Color: ", self.triage_color)
 
@@ -206,10 +205,6 @@ class Track:
             for k in Track.average_times_at_locations_dictionary:
                 Track.average_times_at_locations_dictionary[k] = numpy.mean(Track.individual_times_at_locations_dictionary[k].values())
 
-        #FOR DEBBUGING
-        print("Individual Times At Locations:", Track.individual_times_at_locations_dictionary.values())
-        print("Average Times At Locations:", Track.average_times_at_locations_dictionary.values())
-
 #Class representing...
 #MASS CASUALTY TRIAGE
 #How things are actually being gonkulated.
@@ -275,7 +270,6 @@ class MassCasualtySystem:
             #Add To Data
             if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                 Track.individual_times_at_locations_dictionary["Initial Triage/Water Pickup"].append(self.initial_triage_elapsed_time)
-                print("Current Initial Triage/Water Pickup Values", Track.individual_times_at_locations_dictionary.values())
 
             #Give The Resource Back To The System For Another Marine To Use
             self.initial_triage_resource_definition.release(self.initial_request)
@@ -306,7 +300,6 @@ class MassCasualtySystem:
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["Main Battle Dressing Station"].append(self.red_main_bds_location_elapsed_time)
-                    print("Current Location Times: ", Track.individual_times_at_locations_dictionary.values())
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.main_bds_resource_definition.release(main_bds_request)
@@ -333,7 +326,6 @@ class MassCasualtySystem:
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["Waiting For Red Doctor"].append(self.red_doctor_wait_elapsed_time)
-                    print("Red Doc Current Data: ", Track.individual_times_at_locations_dictionary.values())
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.red_doctor_resource_definition.release(red_doctor_request)
@@ -361,7 +353,8 @@ class MassCasualtySystem:
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["With Red Dedicated Doctor"].append(self.red_doctor_care_elapsed_time)
-                    print("Elapsed Time Values: ", Track.individual_times_at_locations_dictionary.values())
+
+                VariablesAndParameters.run_number += 1
 
             #YELLOW
             if self.marine.triage_color == "Yellow":
@@ -387,7 +380,6 @@ class MassCasualtySystem:
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["Holding Area"].append(self.yellow_holding_area_location_elapsed_time)
-                    print("Current Location Times: ", Track.individual_times_at_locations_dictionary.values())
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.holding_area_resource_definition.release(holding_area_request)
@@ -414,7 +406,6 @@ class MassCasualtySystem:
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["Waiting For Yellow Doctor"].append(self.yellow_doctor_wait_elapsed_time)
-                    print("Yellow Doc Current Data: ", Track.individual_times_at_locations_dictionary.values())
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.yellow_doctor_resource_definition.release(yellow_doctor_request)
@@ -442,8 +433,10 @@ class MassCasualtySystem:
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["With Yellow Dedicated Doctor"].append(self.yellow_doctor_care_elapsed_time)
-                    print("Elapsed Time Values: ", Track.individual_times_at_locations_dictionary.values())
-            
+
+                VariablesAndParameters.run_number += 1
+
+
             #GREEN
             if self.marine.triage_color == "Green":
                 #LOCATION
@@ -468,7 +461,6 @@ class MassCasualtySystem:
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["Auxillary Treatment Area"].append(self.green_aux_treatment_location_elapsed_time)
-                    print("Current Location Times: ", Track.individual_times_at_locations_dictionary.values())
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.aux_treatment_area_resource_definition.release(aux_treatment_request)
@@ -495,7 +487,6 @@ class MassCasualtySystem:
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["Waiting for Green Corpsman"].append(self.green_corpsman_wait_elapsed_time)
-                    print("Green Corpsman Current Data: ", Track.individual_times_at_locations_dictionary.values())
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.green_corpsman_resource_definition.release(green_corpsman_request)
@@ -525,7 +516,8 @@ class MassCasualtySystem:
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["With Green Dedicated Corpsman"].append(self.green_corpsman_care_elapsed_time)
-                    print("Elapsed Time Values: ", Track.individual_times_at_locations_dictionary.values())  
+                
+                VariablesAndParameters.run_number += 1
 
             #BLACK
             if self.marine.triage_color == "Black":
@@ -551,7 +543,6 @@ class MassCasualtySystem:
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["Other Location"].append(self.black_other_location_elapsed_time)
-                    print("Current Location Times: ", Track.individual_times_at_locations_dictionary.values())
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.other_location_resource_definition.release(other_loc_request)     
@@ -578,7 +569,6 @@ class MassCasualtySystem:
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["Waiting for Black Corpsman"].append(self.black_corpsman_wait_elapsed_time)
-                    print("Black Corpsman Current Data: ", Track.individual_times_at_locations_dictionary.values())
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.black_corpsman_resource_definition.release(black_corpsman_request)
@@ -608,9 +598,8 @@ class MassCasualtySystem:
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
                     Track.individual_times_at_locations_dictionary["With Black Dedicated Corpsman"].append(self.black_corpsman_care_elapsed_time)
-                    print("Elapsed Time Values: ", Track.individual_times_at_locations_dictionary.values()) 
 
-        VariablesAndParameters.run_number += 1
+                VariablesAndParameters.run_number += 1
 
 #Class representing...
 #CALCULATIONS
@@ -628,5 +617,11 @@ model.env.process(model.pickup_and_care_procedures())
 model.env.run(until=VariablesAndParameters.simulation_time)
 
 #CALCULATIONS
-print("Priority Counter:")
-print(Track.individiual_marines_priority_count_dictionary.values())
+print("Final Marine Counter: ", VariablesAndParameters.marine_counter)
+print("Times at Locations:")
+for key, values in Track.individual_times_at_locations_dictionary.items():
+    print(key)
+    for value in values:
+        print(value)
+    print()  # Add an empty line between each key-value pair
+
