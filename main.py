@@ -17,7 +17,7 @@ class VariablesAndParameters:
     warm_up = 3
     number_of_runs = 10
     run_number = 0
-    duration_of_simulation_in_minutes = 5
+    duration_of_simulation_in_minutes = 500
     simulation_time = (duration_of_simulation_in_minutes * 60)
     #SIMULATION TIME IS IN SECONDS
 
@@ -72,15 +72,13 @@ class VariablesAndParameters:
 
 #Class representing...
 #A MARINE
-#We pass it the number held in marine_counter to use as the ID.
 class InstanceOfMarine:
     #ID and Time In System
-    def __init__(self, marine_counter):
-        self.marine_counter = marine_counter
+    def __init__(self):
         self.time_in_system_start = 0
-
+        self.id = VariablesAndParameters.marine_counter
         #DEBUGGING
-        print("ID: ", self.marine_counter)
+        print("ID: ", self.id)
         print("Start Time In System: ", self.time_in_system_start)
 
         #Give Them Priority Number and Color
@@ -104,26 +102,26 @@ class InstanceOfMarine:
         if self.set_priority_number == 1:
             self.triage_color = "Red"
             #Add To Data
-        if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-            Track.individiual_marines_priority_count_dictionary["Priority 1: Red"].append(self.marine_counter)
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.individual_marines_priority_count_dictionary["Priority 1: Red"].append(self.id)
             
         if self.set_priority_number == 2:
             self.triage_color = "Yellow"
             #Add To Data
-        if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-            Track.individiual_marines_priority_count_dictionary["Priority 2: Yellow"].append(self.marine_counter)
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.individual_marines_priority_count_dictionary["Priority 2: Yellow"].append(self.id)
             
         if self.set_priority_number == 3:
             self.triage_color = "Green"
             #Add To Data
-        if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-            Track.individiual_marines_priority_count_dictionary["Priority 3: Green"].append(self.marine_counter)
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.individual_marines_priority_count_dictionary["Priority 3: Green"].append(self.id)
             
         if self.set_priority_number == 4:
             self.triage_color = "Black"
             #Add To Data
             if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                Track.individiual_marines_priority_count_dictionary["Priority 4: Black"].append(self.marine_counter)
+                Track.individual_marines_priority_count_dictionary["Priority 4: Black"].append(self.id)
                 
         #DEBUGGING
         print("Triage Color: ", self.triage_color)
@@ -133,10 +131,10 @@ class InstanceOfMarine:
 #DATA
 #Where we put data as the simulation runs.
 class Track:
-    time_spent_in_system = []
 
     #Store Individual IDs of Marines With Each Priority
-    individiual_marines_priority_count_dictionary = {
+    #Used during execution for storage of priorities as they are assigned.
+    individual_marines_priority_count_dictionary = {
         "Priority 1: Red": [],
         "Priority 2: Yellow": [],
         "Priority 3: Green": [],
@@ -144,6 +142,7 @@ class Track:
     }
 
     #Store Number of Each Priority
+    #Used at the end to hold calculated values.
     total_priority_count_dictionary = {
         "Priority 1: Red": [],
         "Priority 2: Yellow": [],
@@ -153,6 +152,7 @@ class Track:
     }
 
     #Store Individual Times at Location in a List
+    #Used during execution to store times of Marines at locations as they go through the system.
     individual_times_at_locations_dictionary = {
         "Initial Triage/Water Pickup": [],
         "Main Battle Dressing Station": [],
@@ -170,6 +170,7 @@ class Track:
     }
 
     #Store Average Time At Locations
+    #Used at the end for calculations.
     average_times_at_locations_dictionary = {
         "Initial Triage/Water Pickup": [],
         "Main Battle Dressing Station": [],
@@ -185,25 +186,6 @@ class Track:
         "With Green Dedicated Corpsman": [],
         "With Black Dedicated Corpsman": []
     }
-
-    #Marine Instance Details
-    #Construct The Format Of How We Want Our Data To Be Collected (SpreadsheetLife)
-    results_df = pandas.DataFrame()
-    results_df["ID"] = []
-    results_df["Priority Number"] = []
-    results_df["Triage Outcome Color Code"] = []
-    results_df["Time In System"] = []
-    #Organize By ID
-    results_df.set_index("ID", inplace=True)
-
-    #Calculate Average Wait By Locations
-    def calculate_average_time_at_locations():
-        if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-            #Get How Many Keys Are In average_times_at_locations_dictionary
-            k = len(Track.average_times_at_locations_dictionary.keys)
-
-            for k in Track.average_times_at_locations_dictionary:
-                Track.average_times_at_locations_dictionary[k] = numpy.mean(Track.individual_times_at_locations_dictionary[k].values())
 
 #Class representing...
 #MASS CASUALTY TRIAGE
@@ -231,7 +213,8 @@ class MassCasualtySystem:
         #IMPORTANT NOTE TO SELF: regular yield is for events (like resources). Yield timeout is for duration (units of time)
         while VariablesAndParameters.run_number < VariablesAndParameters.number_of_runs:
             #Generate Marine
-            self.marine = InstanceOfMarine(VariablesAndParameters.marine_counter)
+            self.marine = InstanceOfMarine()
+            #self.marine = InstanceOfMarine(VariablesAndParameters.marine_counter)
 
             #Decide How Long Until We Generate The Next Marine
             self.sampled_interarrival = numpy.random.exponential(VariablesAndParameters.interarrival_mean)
@@ -606,22 +589,21 @@ class MassCasualtySystem:
 #The putting together the outputs of the gonkulator.
 class Calculations:
     def total_priority_counts():
-        for key in Track.total_priority_count_dictionary:
-            total = sum(Track.individiual_marines_priority_count_dictionary[key])
-            Track.total_priority_count_dictionary[key].append(total)
-        print(Track.total_priority_count_dictionary)
+        for key, values in Track.individual_marines_priority_count_dictionary.items():
+            Track.total_priority_count_dictionary[key] = len(values)
 
+    def average_times_at_locations():
+        for key, values in Track.individual_times_at_locations_dictionary.items():
+            if len(values) > 0:
+                Track.average_times_at_locations_dictionary[key] = sum(values) / len(values)
+            else:
+                Track.average_times_at_locations_dictionary[key] = 0
+            
 #RUNNING THE SYSTEM
 model = MassCasualtySystem()
 model.env.process(model.pickup_and_care_procedures())
 model.env.run(until=VariablesAndParameters.simulation_time)
 
 #CALCULATIONS
-print("Final Marine Counter: ", VariablesAndParameters.marine_counter)
-print("Times at Locations:")
-for key, values in Track.individual_times_at_locations_dictionary.items():
-    print(key)
-    for value in values:
-        print(value)
-    print()  # Add an empty line between each key-value pair
-
+Calculations.total_priority_counts()
+Calculations.average_times_at_locations()
