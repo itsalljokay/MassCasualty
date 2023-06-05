@@ -680,7 +680,7 @@ class CalculationsAndConversions:
         if len(set(value_lengths)) == 1 and max_length == 1:
             average_times_at_locations_dataframe = pandas.DataFrame.from_dict(Track.average_times_at_locations_dictionary, orient="index")
             print(average_times_at_locations_dataframe)
-            average_times_at_locations_dataframe.to_csv("total_marines_priority_count.csv")
+            average_times_at_locations_dataframe.to_csv("average_times_at_locations.csv")
         else:
             max_length_average_times_at_locations_dictionary = max_length
     
@@ -690,7 +690,7 @@ class CalculationsAndConversions:
 
             average_times_at_locations_dataframe = pandas.DataFrame.from_dict(padded_average_times_at_locations_dictionary, orient="index")
             print(average_times_at_locations_dataframe)
-            average_times_at_locations_dataframe.to_csv("individual_times_at_locations.csv")
+            average_times_at_locations_dataframe.to_csv("average_times_at_locations.csv")
 
         return average_times_at_locations_dataframe
 
