@@ -1,5 +1,5 @@
-,0,1
-Priority 1: Red,6,
-Priority 2: Yellow,5,7.0
-Priority 3: Green,9,
-Priority 4: Black,4,8.0
+,0,1,2
+Priority 1: Red,6.0,,
+Priority 2: Yellow,4.0,5.0,
+Priority 3: Green,7.0,8.0,9.0
+Priority 4: Black,,,

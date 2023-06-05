@@ -694,9 +694,21 @@ class CalculationsAndConversions:
 
         return average_times_at_locations_dataframe
 
-    def plot_and_show_graph(dataframe):
-        dataframe.plot()
-        pyplot.show()
+    def plot_and_save_graph(dataframe, title, plot_type, image_filename):
+        if plot_type == "chart":
+            dataframe.plot()
+        elif plot_type == "histogram":
+            dataframe.hist()
+        elif plot_type == "pie":
+            dataframe.plot(kind="pie", subplots=True, legend=False)
+        elif plot_type == "scatter":
+            for idx, row in dataframe.iterrows():
+                pyplot.scatter([idx] * len(row), row)
+        else:
+            print("Invalid plot type!")
+        
+        pyplot.title(title)
+        pyplot.savefig(image_filename)
      
 #RUNNING THE SYSTEM
 model = MassCasualtySystem()
@@ -713,14 +725,13 @@ only convert our tracking dictionaries to dataframes, but also creates an easy w
 pass those dataframes to matplotlib for graphing.
 """
 dataframes = {
-    "Individual Priority Counts By ID": CalculationsAndConversions.convert_to_dataframe_individual_marines_priority_count,
-    "Total Priority Counts": CalculationsAndConversions.convert_to_dataframe_total_priority_count,
-    "Individual Times at Locations by ID": CalculationsAndConversions.convert_to_dataframe_individual_times_at_locations,
-    "Average Times at Locations": CalculationsAndConversions.convert_to_dataframe_average_times_at_locations
+    "Individual Priority Counts By ID": (CalculationsAndConversions.convert_to_dataframe_individual_marines_priority_count, "chart", "individual_marines_priority_count.png"),
+    "Total Priority Counts": (CalculationsAndConversions.convert_to_dataframe_total_priority_count, "bar", "total_priority_count.png"),
+    "Individual Times at Locations by ID": (CalculationsAndConversions.convert_to_dataframe_individual_times_at_locations, "scatter", "individual_times_at_locations.png"),
+    "Average Times at Locations": (CalculationsAndConversions.convert_to_dataframe_average_times_at_locations, "bar","average_times_at_locations.png")
 }
 
-for title, function in dataframes.items():
+for title, (function, plot_type, image_filename) in dataframes.items():
     print(title)
     dataframe = function()
-    CalculationsAndConversions.plot_and_show_graph(dataframe)
-    pyplot.show()
+    CalculationsAndConversions.plot_and_save_graph(dataframe, title, plot_type, image_filename)
