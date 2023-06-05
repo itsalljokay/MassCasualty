@@ -6,8 +6,10 @@ from numpy import mean
 import scipy
 from scipy import stats
 from scipy.stats import lognorm
-import pandas
 import simpy
+import pandas
+import matplotlib
+from matplotlib import pyplot
 
 #Class representing...
 #VARIABLES AND PARAMETERS
@@ -250,8 +252,9 @@ class MassCasualtySystem:
             print("Initial Triage/Water Pickup Elapsed Time: ", self.initial_triage_elapsed_time)
 
             #Add To Data
+            #We are specifying float here as if we don't it will add it as a numpy array instead. We need plain ole float numbers in order to graph them later.
             if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                Track.individual_times_at_locations_dictionary["Initial Triage/Water Pickup"].append(self.initial_triage_elapsed_time)
+                Track.individual_times_at_locations_dictionary["Initial Triage/Water Pickup"].append(float(self.initial_triage_elapsed_time))
 
             #Give The Resource Back To The System For Another Marine To Use
             self.initial_triage_resource_definition.release(self.initial_request)
@@ -281,7 +284,7 @@ class MassCasualtySystem:
 
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Main Battle Dressing Station"].append(self.red_main_bds_location_elapsed_time)
+                    Track.individual_times_at_locations_dictionary["Main Battle Dressing Station"].append(float(self.red_main_bds_location_elapsed_time))
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.main_bds_resource_definition.release(main_bds_request)
@@ -307,7 +310,7 @@ class MassCasualtySystem:
 
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Waiting For Red Doctor"].append(self.red_doctor_wait_elapsed_time)
+                    Track.individual_times_at_locations_dictionary["Waiting For Red Doctor"].append(float(self.red_doctor_wait_elapsed_time))
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.red_doctor_resource_definition.release(red_doctor_request)
@@ -334,7 +337,7 @@ class MassCasualtySystem:
 
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["With Red Dedicated Doctor"].append(self.red_doctor_care_elapsed_time)
+                    Track.individual_times_at_locations_dictionary["With Red Dedicated Doctor"].append(float(self.red_doctor_care_elapsed_time))
 
                 VariablesAndParameters.run_number += 1
 
@@ -361,7 +364,7 @@ class MassCasualtySystem:
 
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Holding Area"].append(self.yellow_holding_area_location_elapsed_time)
+                    Track.individual_times_at_locations_dictionary["Holding Area"].append(float(self.yellow_holding_area_location_elapsed_time))
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.holding_area_resource_definition.release(holding_area_request)
@@ -387,7 +390,7 @@ class MassCasualtySystem:
 
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Waiting For Yellow Doctor"].append(self.yellow_doctor_wait_elapsed_time)
+                    Track.individual_times_at_locations_dictionary["Waiting For Yellow Doctor"].append(float(self.yellow_doctor_wait_elapsed_time))
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.yellow_doctor_resource_definition.release(yellow_doctor_request)
@@ -414,7 +417,7 @@ class MassCasualtySystem:
 
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["With Yellow Dedicated Doctor"].append(self.yellow_doctor_care_elapsed_time)
+                    Track.individual_times_at_locations_dictionary["With Yellow Dedicated Doctor"].append(float(self.yellow_doctor_care_elapsed_time))
 
                 VariablesAndParameters.run_number += 1
 
@@ -442,7 +445,7 @@ class MassCasualtySystem:
 
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Auxillary Treatment Area"].append(self.green_aux_treatment_location_elapsed_time)
+                    Track.individual_times_at_locations_dictionary["Auxillary Treatment Area"].append(float(self.green_aux_treatment_location_elapsed_time))
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.aux_treatment_area_resource_definition.release(aux_treatment_request)
@@ -468,7 +471,7 @@ class MassCasualtySystem:
 
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Waiting for Green Corpsman"].append(self.green_corpsman_wait_elapsed_time)
+                    Track.individual_times_at_locations_dictionary["Waiting for Green Corpsman"].append(float(self.green_corpsman_wait_elapsed_time))
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.green_corpsman_resource_definition.release(green_corpsman_request)
@@ -497,7 +500,7 @@ class MassCasualtySystem:
 
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["With Green Dedicated Corpsman"].append(self.green_corpsman_care_elapsed_time)
+                    Track.individual_times_at_locations_dictionary["With Green Dedicated Corpsman"].append(float(self.green_corpsman_care_elapsed_time))
                 
                 VariablesAndParameters.run_number += 1
 
@@ -524,7 +527,7 @@ class MassCasualtySystem:
 
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Other Location"].append(self.black_other_location_elapsed_time)
+                    Track.individual_times_at_locations_dictionary["Other Location"].append(float(self.black_other_location_elapsed_time))
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.other_location_resource_definition.release(other_loc_request)     
@@ -550,7 +553,7 @@ class MassCasualtySystem:
 
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Waiting for Black Corpsman"].append(self.black_corpsman_wait_elapsed_time)
+                    Track.individual_times_at_locations_dictionary["Waiting for Black Corpsman"].append(float(self.black_corpsman_wait_elapsed_time))
 
                 #Give The Resource Back To The System For Another Marine To Use
                 self.black_corpsman_resource_definition.release(black_corpsman_request)
@@ -579,7 +582,7 @@ class MassCasualtySystem:
 
                 #Add To Data
                 if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["With Black Dedicated Corpsman"].append(self.black_corpsman_care_elapsed_time)
+                    Track.individual_times_at_locations_dictionary["With Black Dedicated Corpsman"].append(float(self.black_corpsman_care_elapsed_time))
 
                 VariablesAndParameters.run_number += 1
 
@@ -590,6 +593,8 @@ class CalculationsAndConversions:
     def total_priority_counts():
         for key, values in Track.individual_marines_priority_count_dictionary.items():
             Track.total_priority_count_dictionary[key] = len(values)
+        print("Total Priority Count Dictionary:")
+        print(Track.total_priority_count_dictionary.values())
 
     def average_times_at_locations():
         for key, values in Track.individual_times_at_locations_dictionary.items():
@@ -597,6 +602,8 @@ class CalculationsAndConversions:
                 Track.average_times_at_locations_dictionary[key] = sum(values) / len(values)
             else:
                 Track.average_times_at_locations_dictionary[key] = 0
+        print("Average Time At Location Dictionary:")
+        print(Track.average_times_at_locations_dictionary.values())
 
     def convert_to_dataframe_individual_marines_priority_count():
         """
@@ -631,6 +638,7 @@ class CalculationsAndConversions:
         print(individual_marines_priority_count_dataframe)
         #Step 4: Output Dataframe as a CSV for future use.
         individual_marines_priority_count_dataframe.to_csv("individual_marines_priority_count.csv")
+        return individual_marines_priority_count_dataframe
 
     def convert_to_dataframe_total_priority_count():
         """
@@ -639,6 +647,7 @@ class CalculationsAndConversions:
         total_marines_priority_count_dataframe = pandas.DataFrame.from_dict(Track.total_priority_count_dictionary, orient="index")
         print(total_marines_priority_count_dataframe)
         total_marines_priority_count_dataframe.to_csv("total_marines_priority_count.csv")
+        return total_marines_priority_count_dataframe
 
     def convert_to_dataframe_individual_times_at_locations():
         max_length_individual_times_at_locations_dictionary = max(len(values) for values in Track.individual_times_at_locations_dictionary.values())
@@ -652,6 +661,7 @@ class CalculationsAndConversions:
         individual_times_at_locations_dataframe = pandas.DataFrame.from_dict(padded_individual_times_at_locations_dictionary, orient="index")
         print(individual_times_at_locations_dataframe)
         individual_times_at_locations_dataframe.to_csv("individual_times_at_locations.csv")
+        return individual_times_at_locations_dataframe
 
     def convert_to_dataframe_average_times_at_locations():
         """
@@ -664,47 +674,53 @@ class CalculationsAndConversions:
         the other stuff we needed to do, instead of wasting our time and checking all the other lengths, when we already
         know we're gonna need to pad.
         """
-        value_lengths = [len(values) for values in Track.average_times_at_locations_dictionary.values()]
-        max_length = max(value_lengths)
-        
-        if len(set(value_lengths)) == 1 and max_length == 1:
-            total_marines_priority_count_dataframe = pandas.DataFrame.from_dict(Track.total_priority_count_dictionary, orient="index")
-            print(total_marines_priority_count_dataframe)
-            total_marines_priority_count_dataframe.to_csv("total_marines_priority_count.csv")
+        value_lengths = [1] * len(Track.average_times_at_locations_dictionary)
+        max_length = 1
 
+        if len(set(value_lengths)) == 1 and max_length == 1:
+            average_times_at_locations_dataframe = pandas.DataFrame.from_dict(Track.average_times_at_locations_dictionary, orient="index")
+            print(average_times_at_locations_dataframe)
+            average_times_at_locations_dataframe.to_csv("total_marines_priority_count.csv")
         else:
-            max_length_average_times_at_locations_dictionary = max(len(values) for values in Track.average_times_at_locations_dictionary.values())
-        
+            max_length_average_times_at_locations_dictionary = max_length
+    
             padded_average_times_at_locations_dictionary = {}
-            for key, values in Track.average_times_at_locations_dictionary.items():
-                padding = [] * (max_length_average_times_at_locations_dictionary - len(values))
-                padded_values = values + padding
-                padded_average_times_at_locations_dictionary[key] = padded_values
-        
+            for key, value in Track.average_times_at_locations_dictionary.items():
+                padded_average_times_at_locations_dictionary[key] = [value]
+
             average_times_at_locations_dataframe = pandas.DataFrame.from_dict(padded_average_times_at_locations_dictionary, orient="index")
             print(average_times_at_locations_dataframe)
             average_times_at_locations_dataframe.to_csv("individual_times_at_locations.csv")
-            
 
-          
+        return average_times_at_locations_dataframe
+
+    def plot_and_show_graph(dataframe):
+        dataframe.plot()
+        pyplot.show()
+     
 #RUNNING THE SYSTEM
 model = MassCasualtySystem()
 model.env.process(model.pickup_and_care_procedures())
 model.env.run(until=VariablesAndParameters.simulation_time)
 
-#APPLYING CALCULATIONS AND CONVERSIONS
+#APPLYING CALCULATIONS AND CONVERSIONS AND THEN GRAPHING EVERYTHING
 CalculationsAndConversions.total_priority_counts()
 CalculationsAndConversions.average_times_at_locations()
-print("Individual Priority Count Dataframe:")
-CalculationsAndConversions.convert_to_dataframe_individual_marines_priority_count()
-print("Total Priority Count Dataframe:")
-CalculationsAndConversions.convert_to_dataframe_total_priority_count()
-print("Indvidual Times at Location Dataframe:")
-CalculationsAndConversions.convert_to_dataframe_individual_times_at_locations()
-print("Average Times At Locations Dataframe:")
-CalculationsAndConversions.convert_to_dataframe_average_times_at_locations()
+"""
+Here we're going to create a dictionary with the names of each dataframe as well
+the function we wrote earlier to actually create the dataframe. This allows us to not
+only convert our tracking dictionaries to dataframes, but also creates an easy way to
+pass those dataframes to matplotlib for graphing.
+"""
+dataframes = {
+    "Individual Priority Counts By ID": CalculationsAndConversions.convert_to_dataframe_individual_marines_priority_count,
+    "Total Priority Counts": CalculationsAndConversions.convert_to_dataframe_total_priority_count,
+    "Individual Times at Locations by ID": CalculationsAndConversions.convert_to_dataframe_individual_times_at_locations,
+    "Average Times at Locations": CalculationsAndConversions.convert_to_dataframe_average_times_at_locations
+}
 
-#MAKING PRETTY GRAPHS
-
-#NEXT UP, PANDAS AND MATPLOTLIB!!
-#Remember, probably good to output all this to a .csv as well.
+for title, function in dataframes.items():
+    print(title)
+    dataframe = function()
+    CalculationsAndConversions.plot_and_show_graph(dataframe)
+    pyplot.show()
