@@ -126,7 +126,6 @@ class InstanceOfMarine:
         #DEBUGGING
         print("Triage Color: ", self.triage_color)
 
-
 #Class representing...
 #DATA
 #Where we put data as the simulation runs.
@@ -587,7 +586,7 @@ class MassCasualtySystem:
 #Class representing...
 #CALCULATIONS
 #The putting together the outputs of the gonkulator.
-class Calculations:
+class CalculationsAndConversions:
     def total_priority_counts():
         for key, values in Track.individual_marines_priority_count_dictionary.items():
             Track.total_priority_count_dictionary[key] = len(values)
@@ -598,15 +597,79 @@ class Calculations:
                 Track.average_times_at_locations_dictionary[key] = sum(values) / len(values)
             else:
                 Track.average_times_at_locations_dictionary[key] = 0
-            
+
+    def convert_to_dataframe_individual_marines_priority_count():
+        """
+        Converting our Dictionaries to Pandas Dataframes
+        Here we are converting our dictionaries we used during the simulation to Pandas dataframes for easy output and plotting later.
+        Pandas dataframes don't just automatically fill in any empty cells if there isn't any values there like Excel does.
+        So, if there are 17 Red priority Marines, and only 4 Yellow Priority Marines, we need to fill in the remaining values
+        on the Yellow Priority Marines rows with designated empty values, else the dataframe will freak and not work.
+        """
+        #INDIVIDUAL MARINES PRIORITY COUNT DICTIONARY
+        #Step 1: Find the longest entry.
+        max_length_individual_marines_priority_count_dictionary = max(len(values) for values in Track.individual_marines_priority_count_dictionary.values())
+        """
+        for entry in Track.individual_marines_priority_count_dictionary:
+            max_length_individual_marines_priority_count_dictionary = max(len(entry))
+        """
+        #Step 2: Padd the list with any extra values to make all entries of equal length.
+        """
+        Here, we are making a new dictionary to include the padded (empty) cells.
+        Then for every key and value pair in our unpadded dictionary, we add an empty cell.
+        [] * (max_length... - len(values)) says add an empty cell ([]) for however many cells we have between the largest entry in the dictionary 
+        and how many we actually have.
+        Then we go ahead and add the values plus our new padding into the dictionary.
+        """
+        padded_individual_marines_priority_count_dictionary = {}
+        for key, values in Track.individual_marines_priority_count_dictionary.items():
+            padding = [] * (max_length_individual_marines_priority_count_dictionary - len(values))
+            padded_values = values + padding
+            padded_individual_marines_priority_count_dictionary[key] = padded_values
+        #Step 3: Convert to Pandas Dataframe
+        individual_marines_priority_count_dataframe = pandas.DataFrame.from_dict(padded_individual_marines_priority_count_dictionary, orient="index")
+        print(individual_marines_priority_count_dataframe)
+
+    def convert_to_dataframe_total_priority_count():
+        """
+        We don't have to do the padding here. Why? Because all values are the same for every row.
+        """
+        total_marines_priority_count_dataframe = pandas.DataFrame.from_dict(Track.total_priority_count_dictionary, orient="index")
+        print(total_marines_priority_count_dataframe)
+
+    def convert_to_dataframe_individual_times_at_locations():
+        max_length_individual_times_at_locations_dictionary = max(len(values) for values in Track.individual_times_at_locations_dictionary.values())
+        
+        padded_individual_times_at_locations_dictionary = {}
+        for key, values in Track.individual_times_at_locations_dictionary.items():
+            padding = [] * (max_length_individual_times_at_locations_dictionary - len(values))
+            padded_values = values + padding
+            padded_individual_times_at_locations_dictionary[key] = padded_values
+        
+        individual_times_at_locations_dictionary_dataframe = pandas.DataFrame.from_dict(padded_individual_times_at_locations_dictionary, orient="index")
+        print(individual_times_at_locations_dictionary_dataframe)
+
+    def convert_to_dataframe_average_times_at_locations():
+        average_times_at_locations_dataframe = pandas.DataFrame.from_dict(Track.average_times_at_locations_dictionary, orient="index")
+        print(average_times_at_locations_dataframe)
+
+          
 #RUNNING THE SYSTEM
 model = MassCasualtySystem()
 model.env.process(model.pickup_and_care_procedures())
 model.env.run(until=VariablesAndParameters.simulation_time)
 
-#CALCULATIONS
-Calculations.total_priority_counts()
-Calculations.average_times_at_locations()
+#APPLYING CALCULATIONS AND CONVERSIONS
+CalculationsAndConversions.total_priority_counts()
+CalculationsAndConversions.average_times_at_locations()
+print("Individual Priority Count Dataframe:")
+CalculationsAndConversions.convert_to_dataframe_individual_marines_priority_count()
+print("Total Priority Count Dataframe:")
+CalculationsAndConversions.convert_to_dataframe_total_priority_count()
+print("Indvidual Times at Location Dataframe:")
+CalculationsAndConversions.convert_to_dataframe_individual_times_at_locations()
+print("Average Times At Locations Dataframe:")
+CalculationsAndConversions.convert_to_dataframe_average_times_at_locations()
 
 #NEXT UP, PANDAS AND MATPLOTLIB!!
 #Remember, probably good to output all this to a .csv as well.
