@@ -629,6 +629,8 @@ class CalculationsAndConversions:
         #Step 3: Convert to Pandas Dataframe
         individual_marines_priority_count_dataframe = pandas.DataFrame.from_dict(padded_individual_marines_priority_count_dictionary, orient="index")
         print(individual_marines_priority_count_dataframe)
+        #Step 4: Output Dataframe as a CSV for future use.
+        individual_marines_priority_count_dataframe.to_csv("individual_marines_priority_count.csv")
 
     def convert_to_dataframe_total_priority_count():
         """
@@ -636,6 +638,7 @@ class CalculationsAndConversions:
         """
         total_marines_priority_count_dataframe = pandas.DataFrame.from_dict(Track.total_priority_count_dictionary, orient="index")
         print(total_marines_priority_count_dataframe)
+        total_marines_priority_count_dataframe.to_csv("total_marines_priority_count.csv")
 
     def convert_to_dataframe_individual_times_at_locations():
         max_length_individual_times_at_locations_dictionary = max(len(values) for values in Track.individual_times_at_locations_dictionary.values())
@@ -646,12 +649,42 @@ class CalculationsAndConversions:
             padded_values = values + padding
             padded_individual_times_at_locations_dictionary[key] = padded_values
         
-        individual_times_at_locations_dictionary_dataframe = pandas.DataFrame.from_dict(padded_individual_times_at_locations_dictionary, orient="index")
-        print(individual_times_at_locations_dictionary_dataframe)
+        individual_times_at_locations_dataframe = pandas.DataFrame.from_dict(padded_individual_times_at_locations_dictionary, orient="index")
+        print(individual_times_at_locations_dataframe)
+        individual_times_at_locations_dataframe.to_csv("individual_times_at_locations.csv")
 
     def convert_to_dataframe_average_times_at_locations():
-        average_times_at_locations_dataframe = pandas.DataFrame.from_dict(Track.average_times_at_locations_dictionary, orient="index")
-        print(average_times_at_locations_dataframe)
+        """
+        This one is a little different because sometimes when you run the simulation, you could end up with a marine at
+        every location, in which case checking for max_length will error out because all values are the same, OR...
+        You could not end up with a Marine at every location, and you needed to padd the cell.
+        To check this, we first assume we don't need any padding, and calcualte the length of the first key's values to
+        serve as our first checking point. From there, if another entry has a different length, then we realize we need
+        to padd, and switch our is_padding_needed variable to Yes, or True. Then we break out of this loop to return to
+        the other stuff we needed to do, instead of wasting our time and checking all the other lengths, when we already
+        know we're gonna need to pad.
+        """
+        value_lengths = [len(values) for values in Track.average_times_at_locations_dictionary.values()]
+        max_length = max(value_lengths)
+        
+        if len(set(value_lengths)) == 1 and max_length == 1:
+            total_marines_priority_count_dataframe = pandas.DataFrame.from_dict(Track.total_priority_count_dictionary, orient="index")
+            print(total_marines_priority_count_dataframe)
+            total_marines_priority_count_dataframe.to_csv("total_marines_priority_count.csv")
+
+        else:
+            max_length_average_times_at_locations_dictionary = max(len(values) for values in Track.average_times_at_locations_dictionary.values())
+        
+            padded_average_times_at_locations_dictionary = {}
+            for key, values in Track.average_times_at_locations_dictionary.items():
+                padding = [] * (max_length_average_times_at_locations_dictionary - len(values))
+                padded_values = values + padding
+                padded_average_times_at_locations_dictionary[key] = padded_values
+        
+            average_times_at_locations_dataframe = pandas.DataFrame.from_dict(padded_average_times_at_locations_dictionary, orient="index")
+            print(average_times_at_locations_dataframe)
+            average_times_at_locations_dataframe.to_csv("individual_times_at_locations.csv")
+            
 
           
 #RUNNING THE SYSTEM
@@ -670,6 +703,8 @@ print("Indvidual Times at Location Dataframe:")
 CalculationsAndConversions.convert_to_dataframe_individual_times_at_locations()
 print("Average Times At Locations Dataframe:")
 CalculationsAndConversions.convert_to_dataframe_average_times_at_locations()
+
+#MAKING PRETTY GRAPHS
 
 #NEXT UP, PANDAS AND MATPLOTLIB!!
 #Remember, probably good to output all this to a .csv as well.
