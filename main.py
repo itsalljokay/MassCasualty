@@ -341,6 +341,8 @@ class MassCasualtySystem:
 
                 VariablesAndParameters.run_number += 1
 
+               
+
             #YELLOW
             if self.marine.triage_color == "Yellow":
                 #LOCATION
@@ -435,7 +437,7 @@ class MassCasualtySystem:
                 #Wait Until Request Can Be Fulfilled
                 yield aux_treatment_request
 
-                #End Red Location Timer
+                #End Green Location Timer
                 self.green_aux_treatment_location_timer_end = self.env.now
                 print("Green Location End Time: ", self.green_aux_treatment_location_timer_end)
 
@@ -517,7 +519,7 @@ class MassCasualtySystem:
                 #Wait Until Request Can Be Fulfilled
                 yield other_loc_request
 
-                #End Red Location Timer
+                #End Green Location Timer
                 self.black_other_location_timer_end = self.env.now
                 print("Black Location End Time: ", self.black_other_location_timer_end)
 
@@ -727,7 +729,7 @@ pass those dataframes to matplotlib for graphing.
 dataframes = {
     "Individual Priority Counts By ID": (CalculationsAndConversions.convert_to_dataframe_individual_marines_priority_count, "chart", "individual_marines_priority_count.png"),
     "Total Priority Counts": (CalculationsAndConversions.convert_to_dataframe_total_priority_count, "bar", "total_priority_count.png"),
-    "Individual Times at Locations by ID": (CalculationsAndConversions.convert_to_dataframe_individual_times_at_locations, "scatter", "individual_times_at_locations.png"),
+    "Individual Times at Locations by ID": (CalculationsAndConversions.convert_to_dataframe_individual_times_at_locations, "chart", "individual_times_at_locations.png"),
     "Average Times at Locations": (CalculationsAndConversions.convert_to_dataframe_average_times_at_locations, "bar","average_times_at_locations.png")
 }
 
@@ -735,3 +737,6 @@ for title, (function, plot_type, image_filename) in dataframes.items():
     print(title)
     dataframe = function()
     CalculationsAndConversions.plot_and_save_graph(dataframe, title, plot_type, image_filename)
+
+print("INDIVIDUAL TIMES AT LOCATIONS DICTIONARY")
+print(Track.individual_times_at_locations_dictionary.values())
