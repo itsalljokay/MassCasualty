@@ -607,3 +607,5 @@ model.env.run(until=VariablesAndParameters.simulation_time)
 #CALCULATIONS
 Calculations.total_priority_counts()
 Calculations.average_times_at_locations()
+
+#NEXT UP, PANDAS AND MATPLOTLIB!!
