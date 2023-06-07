@@ -16,10 +16,10 @@ from matplotlib import pyplot
 #Global variables and a parameters are tweaked here.
 class VariablesAndParameters:
     #Sim Details
-    warm_up = 3
+    warm_up = 0
     number_of_runs = 10
     run_number = 0
-    duration_of_simulation_in_minutes = 500
+    duration_of_simulation_in_minutes = 5
     simulation_time = (duration_of_simulation_in_minutes * 60)
     #SIMULATION TIME IS IN SECONDS
 
@@ -210,383 +210,389 @@ class MassCasualtySystem:
         self.aux_treatment_area_resource_definition = simpy.Resource(self.env, capacity = VariablesAndParameters.auxillary_treatment_area_maximum_occupancy)
         self.other_location_resource_definition = simpy.Resource(self.env, capacity = VariablesAndParameters.other_location_maximum_occupancy)
    
-    def pickup_and_care_procedures(self):
-        #IMPORTANT NOTE TO SELF: regular yield is for events (like resources). Yield timeout is for duration (units of time)
+    def triage_generator(self):
         while VariablesAndParameters.run_number < VariablesAndParameters.number_of_runs:
-            #Generate Marine
-            self.marine = InstanceOfMarine()
-            #self.marine = InstanceOfMarine(VariablesAndParameters.marine_counter)
+            marine = InstanceOfMarine()
+            self.env.process(self.pickup_and_care_procedures(marine))
 
-            #Decide How Long Until We Generate The Next Marine
-            self.sampled_interarrival = numpy.random.exponential(VariablesAndParameters.interarrival_mean)
-            print("Time Till Next Marine: ", self.sampled_interarrival)
-        
-            #Wait For Random (Within Average) Amount of Time Before Generating Next Marine
-            yield self.env.timeout(self.sampled_interarrival)
+    def pickup_and_care_procedures(self, marine):
+        #IMPORTANT NOTE TO SELF: regular yield is for events (like resources). Yield timeout is for duration (units of time)
 
-            #INITIAL TRIAGE/WATER PICKUP
-            #Start Initial Triage Timer
-            self.initial_triage_water_pickup_start_time = self.env.now
-            print("Initial Triage/Water Pickup Start Time: ", self.initial_triage_water_pickup_start_time)
+        #Decide How Long Until We Generate The Next Marine
+        self.sampled_interarrival = numpy.random.exponential(VariablesAndParameters.interarrival_mean)
+        print("Time Till Next Marine: ", self.sampled_interarrival)
+    
+        #Wait For Random (Within Average) Amount of Time Before Generating Next Marine
+        yield self.env.timeout(self.sampled_interarrival)
 
-            #Request Initial Triage/Water Pickup
-            self.initial_request = self.initial_triage_resource_definition.request()
+        #INITIAL TRIAGE/WATER PICKUP
+        #Start Initial Triage Timer
+        self.initial_triage_water_pickup_start_time = self.env.now
+        print("Initial Triage/Water Pickup Start Time: ", self.initial_triage_water_pickup_start_time)
 
-            #Wait Until Request Is Fulfilled And Marine Is Picked Up
-            yield self.initial_request
-            #yield self.env.timeout(initial_request)og
+        #Request Initial Triage/Water Pickup
+        self.initial_request = self.initial_triage_resource_definition.request()
 
-            #Calculate How Long This Initial Triage Will Take
-            self.sampled_triage_time = numpy.random.lognormal(VariablesAndParameters.water_pickup_triage_mean_time, VariablesAndParameters.water_pickup_triage_stdev_time, 1)
-            print("Calculation of Initial Triage Duration: ", self.sampled_triage_time)
+        #Wait Until Request Is Fulfilled And Marine Is Picked Up
+        yield self.initial_request
+        #yield self.env.timeout(initial_request)og
 
-            #Wait For That Initial Triage Time
-            yield self.env.timeout(self.sampled_triage_time)
+        #Calculate How Long This Initial Triage Will Take
+        self.sampled_triage_time = numpy.random.lognormal(VariablesAndParameters.water_pickup_triage_mean_time, VariablesAndParameters.water_pickup_triage_stdev_time, 1)
+        print("Calculation of Initial Triage Duration: ", self.sampled_triage_time)
 
-            #End Initial Triage Timer
-            self.initial_triage_water_pickup_end_time = self.env.now
-            print("Initial Triage/Water Pickup End Time: ", self.initial_triage_water_pickup_end_time)
+        #Wait For That Initial Triage Time
+        yield self.env.timeout(self.sampled_triage_time)
 
-            #Calculate Initial Triage Elapsed Time
-            self.initial_triage_elapsed_time = (self.initial_triage_water_pickup_end_time - self.initial_triage_water_pickup_start_time)
-            print("Initial Triage/Water Pickup Elapsed Time: ", self.initial_triage_elapsed_time)
+        #End Initial Triage Timer
+        self.initial_triage_water_pickup_end_time = self.env.now
+        print("Initial Triage/Water Pickup End Time: ", self.initial_triage_water_pickup_end_time)
+
+        #Calculate Initial Triage Elapsed Time
+        self.initial_triage_elapsed_time = (self.initial_triage_water_pickup_end_time - self.initial_triage_water_pickup_start_time)
+        print("Initial Triage/Water Pickup Elapsed Time: ", self.initial_triage_elapsed_time)
+
+        #Add To Data
+        #We are specifying float here as if we don't it will add it as a numpy array instead. We need plain ole float numbers in order to graph them later.
+        if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+            Track.individual_times_at_locations_dictionary["Initial Triage/Water Pickup"].append(float(self.initial_triage_elapsed_time))
+
+        self.initial_triage_resource_definition.release(self.initial_request)
+
+        #Triage Color
+        passed_triage_color = marine.triage_color
+        print("TRIAGE COLOR")
+        print(passed_triage_color)
+
+        if passed_triage_color == "Red":
+            #RED
+            #LOCATION
+            #Start Red Location Timer
+            print("START TRIAGE COLOR SHOULD BE RED:")
+            print(passed_triage_color)
+            red_main_bds_location_timer_start = self.env.now
+            print("Red Location Start Time: ", red_main_bds_location_timer_start)
+
+            #Request Main BDS Location
+            main_bds_request = self.main_bds_resource_definition.request()
+
+            #Wait Until Request Can Be Fulfilled
+            yield main_bds_request
+
+            #End Red Location Timer
+            red_main_bds_location_timer_end = self.env.now
+            print("Red Location End Time: ", red_main_bds_location_timer_end)
+
+            #Calculate Red Location Elapsed Time
+            red_main_bds_location_elapsed_time = (red_main_bds_location_timer_end - red_main_bds_location_timer_start)
+            print("Red Location Elapsed Time: ", red_main_bds_location_elapsed_time)
 
             #Add To Data
-            #We are specifying float here as if we don't it will add it as a numpy array instead. We need plain ole float numbers in order to graph them later.
             if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                Track.individual_times_at_locations_dictionary["Initial Triage/Water Pickup"].append(float(self.initial_triage_elapsed_time))
+                Track.individual_times_at_locations_dictionary["Main Battle Dressing Station"].append(float(red_main_bds_location_elapsed_time))
 
             #Give The Resource Back To The System For Another Marine To Use
-            self.initial_triage_resource_definition.release(self.initial_request)
+            self.main_bds_resource_definition.release(main_bds_request)
+
+            #WAIT FOR CARE
+            #Start Red Doctor Wait Timer
+            red_doctor_wait_timer_start = self.env.now
+            print("Red Doc Wait Time Start: ", red_doctor_wait_timer_start)
+
+            #Request Red Doctor
+            red_doctor_request = self.red_doctor_resource_definition.request()
+
+            #Wait Until Request Can Be Fulfilled
+            yield red_doctor_request
+
+            #End Red Doctor Wait Timer
+            red_doctor_wait_timer_end = self.env.now
+            print("Red Doc Wait End Time: ", red_doctor_wait_timer_end)
+
+            #Calculate Red Doctor Wait Time
+            red_doctor_wait_elapsed_time = (red_doctor_wait_timer_end - red_doctor_wait_timer_start)
+            print("Red Doc Elapsed Time: ", red_doctor_wait_elapsed_time)
+
+            #Add To Data
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.individual_times_at_locations_dictionary["Waiting For Red Doctor"].append(float(red_doctor_wait_elapsed_time))
+
+            #Give The Resource Back To The System For Another Marine To Use
+            self.red_doctor_resource_definition.release(red_doctor_request)
             
-            #CARE BY TRIAGE PRIORITY/COLOR-CODE
+            #CARE
+            #Start Care Timer
+            red_doctor_care_timer_start = self.env.now
+            print("Red Care Start Time: ", red_doctor_care_timer_start)
 
-            #RED
-            if self.marine.triage_color == "Red":
-                #LOCATION
-                #Start Red Location Timer
-                self.red_main_bds_location_timer_start = self.env.now
-                print("Red Location Start Time: ", self.red_main_bds_location_timer_start)
+            #Calculate How Long Care Will Take
+            red_care_time = numpy.random.lognormal(VariablesAndParameters.red_mean_doctor_main_bds_consultation, VariablesAndParameters.red_stdev_doctor_main_bds_consultation)
+            print("Red Care Calculated Time: ", red_care_time) 
 
-                #Request Main BDS Location
-                main_bds_request = self.main_bds_resource_definition.request()
+            #Wait That Amount of Care Time
+            yield self.env.timeout(red_care_time)
 
-                #Wait Until Request Can Be Fulfilled
-                yield main_bds_request
+            #Stop Care Timer
+            red_doctor_care_timer_end = self.env.now
+            print("Red Care Timer End: ", red_doctor_care_timer_end)
 
-                #End Red Location Timer
-                self.red_main_bds_location_timer_end = self.env.now
-                print("Red Location End Time: ", self.red_main_bds_location_timer_end)
+            #Calculate Red Care Time
+            red_doctor_care_elapsed_time = (red_doctor_care_timer_end - red_doctor_care_timer_start)
+            print("Red Care Elapsed Time: ", red_doctor_care_elapsed_time)
 
-                #Calculate Red Location Elapsed Time
-                self.red_main_bds_location_elapsed_time = (self.red_main_bds_location_timer_end - self.red_main_bds_location_timer_start)
-                print("Red Location Elapsed Time: ", self.red_main_bds_location_elapsed_time)
+            #Add To Data
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.individual_times_at_locations_dictionary["With Red Dedicated Doctor"].append(float(red_doctor_care_elapsed_time))
+            print("END TRIAGE COLOR SHOULD BE RED:")
+            print(passed_triage_color)
 
-                #Add To Data
-                if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Main Battle Dressing Station"].append(float(self.red_main_bds_location_elapsed_time))
-
-                #Give The Resource Back To The System For Another Marine To Use
-                self.main_bds_resource_definition.release(main_bds_request)
-
-                #WAIT FOR CARE
-                #Start Red Doctor Wait Timer
-                self.red_doctor_wait_timer_start = self.env.now
-                print("Red Doc Wait Time Start: ", self.red_doctor_wait_timer_start)
-
-                #Request Red Doctor
-                red_doctor_request = self.red_doctor_resource_definition.request()
-
-                #Wait Until Request Can Be Fulfilled
-                yield red_doctor_request
-
-                #End Red Doctor Wait Timer
-                self.red_doctor_wait_timer_end = self.env.now
-                print("Red Doc Wait End Time: ", self.red_doctor_wait_timer_end)
-
-                #Calculate Red Doctor Wait Time
-                self.red_doctor_wait_elapsed_time = (self.red_doctor_wait_timer_end - self.red_doctor_wait_timer_start)
-                print("Red Doc Elapsed Time: ", self.red_doctor_wait_elapsed_time)
-
-                #Add To Data
-                if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Waiting For Red Doctor"].append(float(self.red_doctor_wait_elapsed_time))
-
-                #Give The Resource Back To The System For Another Marine To Use
-                self.red_doctor_resource_definition.release(red_doctor_request)
-                
-                #CARE
-                #Start Care Timer
-                self.red_doctor_care_timer_start = self.env.now
-                print("Red Care Start Time: ", self.red_doctor_care_timer_start)
-
-                #Calculate How Long Care Will Take
-                red_care_time = numpy.random.lognormal(VariablesAndParameters.red_mean_doctor_main_bds_consultation, VariablesAndParameters.red_stdev_doctor_main_bds_consultation)
-                print("Red Care Calculated Time: ", red_care_time) 
-
-                #Wait That Amount of Care Time
-                yield self.env.timeout(red_care_time)
-
-                #Stop Care Timer
-                self.red_doctor_care_timer_end = self.env.now
-                print("Red Care Timer End: ", self.red_doctor_care_timer_end)
-
-                #Calculate Red Care Time
-                self.red_doctor_care_elapsed_time = (self.red_doctor_care_timer_end - self.red_doctor_care_timer_start)
-                print("Red Care Elapsed Time: ", self.red_doctor_care_elapsed_time)
-
-                #Add To Data
-                if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["With Red Dedicated Doctor"].append(float(self.red_doctor_care_elapsed_time))
-
-                VariablesAndParameters.run_number += 1
-
-               
-
+        elif passed_triage_color == "Yellow":
+            print("STARTING TRIAGE COLOR SHOULD BE YELLOW")
+            print(passed_triage_color)
             #YELLOW
-            if self.marine.triage_color == "Yellow":
-                #LOCATION
-                #Start Yellow Location Timer
-                self.yellow_holding_area_location_timer_start = self.env.now
-                print("Yellow Location Start Time: ", self.yellow_holding_area_location_timer_start)
+            #LOCATION
+            #Start Yellow Location Timer
+            self.yellow_holding_area_location_timer_start = self.env.now
+            print("Yellow Location Start Time: ", self.yellow_holding_area_location_timer_start)
 
-                #Request Holding Area Location
-                holding_area_request = self.holding_area_resource_definition.request()
+            #Request Holding Area Location
+            holding_area_request = self.holding_area_resource_definition.request()
 
-                #Wait Until Request Can Be Fulfilled
-                yield holding_area_request
+            #Wait Until Request Can Be Fulfilled
+            yield holding_area_request
 
-                #End Yellow Location Timer
-                self.yellow_holding_area_location_timer_end = self.env.now
-                print("Yellow Location End Time: ", self.yellow_holding_area_location_timer_end)
+            #End Yellow Location Timer
+            self.yellow_holding_area_location_timer_end = self.env.now
+            print("Yellow Location End Time: ", self.yellow_holding_area_location_timer_end)
 
-                #Calculate Yellow Location Elapsed Time
-                self.yellow_holding_area_location_elapsed_time = (self.yellow_holding_area_location_timer_end - self.yellow_holding_area_location_timer_start)
-                print("Yellow Location Elapsed Time: ", self.yellow_holding_area_location_elapsed_time)
+            #Calculate Yellow Location Elapsed Time
+            self.yellow_holding_area_location_elapsed_time = (self.yellow_holding_area_location_timer_end - self.yellow_holding_area_location_timer_start)
+            print("Yellow Location Elapsed Time: ", self.yellow_holding_area_location_elapsed_time)
 
-                #Add To Data
-                if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Holding Area"].append(float(self.yellow_holding_area_location_elapsed_time))
+            #Add To Data
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.individual_times_at_locations_dictionary["Holding Area"].append(float(self.yellow_holding_area_location_elapsed_time))
 
-                #Give The Resource Back To The System For Another Marine To Use
-                self.holding_area_resource_definition.release(holding_area_request)
-                
-                #WAIT FOR CARE
-                #Start Yellow Doctor Wait Timer
-                self.yellow_doctor_wait_timer_start = self.env.now
-                print("Yellow Doc Wait Time Start: ", self.yellow_doctor_wait_timer_start)
+            #Give The Resource Back To The System For Another Marine To Use
+            self.holding_area_resource_definition.release(holding_area_request)
+            
+            #WAIT FOR CARE
+            #Start Yellow Doctor Wait Timer
+            self.yellow_doctor_wait_timer_start = self.env.now
+            print("Yellow Doc Wait Time Start: ", self.yellow_doctor_wait_timer_start)
 
-                #Request Yellow Doctor
-                yellow_doctor_request = self.yellow_doctor_resource_definition.request()
+            #Request Yellow Doctor
+            yellow_doctor_request = self.yellow_doctor_resource_definition.request()
 
-                #Wait Until Request Can Be Fulfilled
-                yield yellow_doctor_request
+            #Wait Until Request Can Be Fulfilled
+            yield yellow_doctor_request
 
-                #End Yellow Doctor Wait Timer
-                self.yellow_doctor_wait_timer_end = self.env.now
-                print("Yellow Doc Wait End Time: ", self.yellow_doctor_wait_timer_end)
+            #End Yellow Doctor Wait Timer
+            self.yellow_doctor_wait_timer_end = self.env.now
+            print("Yellow Doc Wait End Time: ", self.yellow_doctor_wait_timer_end)
 
-                #Calculate Yellow Doctor Wait Time
-                self.yellow_doctor_wait_elapsed_time = (self.yellow_doctor_wait_timer_end - self.yellow_doctor_wait_timer_start)
-                print("Yellow Doc Elapsed Time: ", self.yellow_doctor_wait_elapsed_time)
+            #Calculate Yellow Doctor Wait Time
+            self.yellow_doctor_wait_elapsed_time = (self.yellow_doctor_wait_timer_end - self.yellow_doctor_wait_timer_start)
+            print("Yellow Doc Elapsed Time: ", self.yellow_doctor_wait_elapsed_time)
 
-                #Add To Data
-                if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Waiting For Yellow Doctor"].append(float(self.yellow_doctor_wait_elapsed_time))
+            #Add To Data
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.individual_times_at_locations_dictionary["Waiting For Yellow Doctor"].append(float(self.yellow_doctor_wait_elapsed_time))
 
-                #Give The Resource Back To The System For Another Marine To Use
-                self.yellow_doctor_resource_definition.release(yellow_doctor_request)
-                
-                #CARE
-                #Start Care Timer
-                self.yellow_doctor_care_timer_start = self.env.now
-                print("Yellow Care Start Time: ", self.yellow_doctor_care_timer_start)
+            #Give The Resource Back To The System For Another Marine To Use
+            self.yellow_doctor_resource_definition.release(yellow_doctor_request)
+            
+            #CARE
+            #Start Care Timer
+            self.yellow_doctor_care_timer_start = self.env.now
+            print("Yellow Care Start Time: ", self.yellow_doctor_care_timer_start)
 
-                #Calculate How Long Care Will Take
-                yellow_care_time = numpy.random.lognormal(VariablesAndParameters.yellow_mean_doctor_holding_area_consultation, VariablesAndParameters.yellow_stdev_doctor_holding_area_consultation)
-                print("Yellow Care Calculated Time: ", yellow_care_time) 
+            #Calculate How Long Care Will Take
+            yellow_care_time = numpy.random.lognormal(VariablesAndParameters.yellow_mean_doctor_holding_area_consultation, VariablesAndParameters.yellow_stdev_doctor_holding_area_consultation)
+            print("Yellow Care Calculated Time: ", yellow_care_time) 
 
-                #Wait That Amount of Care Time
-                yield self.env.timeout(yellow_care_time)
+            #Wait That Amount of Care Time
+            yield self.env.timeout(yellow_care_time)
 
-                #Stop Care Timer
-                self.yellow_doctor_care_timer_end = self.env.now
-                print("Yellow Care Timer End: ", self.yellow_doctor_care_timer_end)
+            #Stop Care Timer
+            self.yellow_doctor_care_timer_end = self.env.now
+            print("Yellow Care Timer End: ", self.yellow_doctor_care_timer_end)
 
-                #Calculate Yellow Care Time
-                self.yellow_doctor_care_elapsed_time = (self.yellow_doctor_care_timer_end - self.yellow_doctor_care_timer_start)
-                print("Yellow Care Elapsed Time: ", self.yellow_doctor_care_elapsed_time)
+            #Calculate Yellow Care Time
+            self.yellow_doctor_care_elapsed_time = (self.yellow_doctor_care_timer_end - self.yellow_doctor_care_timer_start)
+            print("Yellow Care Elapsed Time: ", self.yellow_doctor_care_elapsed_time)
 
-                #Add To Data
-                if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["With Yellow Dedicated Doctor"].append(float(self.yellow_doctor_care_elapsed_time))
-
-                VariablesAndParameters.run_number += 1
-
-
+            #Add To Data
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.individual_times_at_locations_dictionary["With Yellow Dedicated Doctor"].append(float(self.yellow_doctor_care_elapsed_time))
+            print("ENDING TRIAGE COLOR SHOULD BE YELLOW")
+            print(passed_triage_color)
+        """
+        elif passed_triage_color == "Green":
             #GREEN
-            if self.marine.triage_color == "Green":
-                #LOCATION
-                #Start Green Location Timer
-                self.green_aux_treatment_location_timer_start = self.env.now
-                print("Green Location Start Time: ", self.green_aux_treatment_location_timer_start)
+            #LOCATION
+            #Start Green Location Timer
+            self.green_aux_treatment_location_timer_start = self.env.now
+            print("Green Location Start Time: ", self.green_aux_treatment_location_timer_start)
 
-                #Request Auxillary Treatment Area Location
-                aux_treatment_request = self.aux_treatment_area_resource_definition.request()
+            #Request Auxillary Treatment Area Location
+            aux_treatment_request = self.aux_treatment_area_resource_definition.request()
 
-                #Wait Until Request Can Be Fulfilled
-                yield aux_treatment_request
+            #Wait Until Request Can Be Fulfilled
+            yield aux_treatment_request
 
-                #End Green Location Timer
-                self.green_aux_treatment_location_timer_end = self.env.now
-                print("Green Location End Time: ", self.green_aux_treatment_location_timer_end)
+            #End Green Location Timer
+            self.green_aux_treatment_location_timer_end = self.env.now
+            print("Green Location End Time: ", self.green_aux_treatment_location_timer_end)
 
-                #Calculate Green Location Elapsed Time
-                self.green_aux_treatment_location_elapsed_time = (self.green_aux_treatment_location_timer_end - self.green_aux_treatment_location_timer_start)
-                print("Green Location Elapsed Time: ", self.green_aux_treatment_location_elapsed_time)
+            #Calculate Green Location Elapsed Time
+            self.green_aux_treatment_location_elapsed_time = (self.green_aux_treatment_location_timer_end - self.green_aux_treatment_location_timer_start)
+            print("Green Location Elapsed Time: ", self.green_aux_treatment_location_elapsed_time)
 
-                #Add To Data
-                if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Auxillary Treatment Area"].append(float(self.green_aux_treatment_location_elapsed_time))
+            #Add To Data
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.individual_times_at_locations_dictionary["Auxillary Treatment Area"].append(float(self.green_aux_treatment_location_elapsed_time))
 
-                #Give The Resource Back To The System For Another Marine To Use
-                self.aux_treatment_area_resource_definition.release(aux_treatment_request)
-                
-                #WAIT FOR CARE
-                #Start Green Corpsman Wait Timer
-                self.green_corpsman_wait_timer_start = self.env.now
-                print("Green Corpsman Wait Time Start: ", self.green_corpsman_wait_timer_start)
+            #Give The Resource Back To The System For Another Marine To Use
+            self.aux_treatment_area_resource_definition.release(aux_treatment_request)
+            
+            #WAIT FOR CARE
+            #Start Green Corpsman Wait Timer
+            self.green_corpsman_wait_timer_start = self.env.now
+            print("Green Corpsman Wait Time Start: ", self.green_corpsman_wait_timer_start)
 
-                #Request Green Corpsman
-                green_corpsman_request = self.green_corpsman_resource_definition.request()
+            #Request Green Corpsman
+            green_corpsman_request = self.green_corpsman_resource_definition.request()
 
-                #Wait Until Request Can Be Fulfilled
-                yield green_corpsman_request
+            #Wait Until Request Can Be Fulfilled
+            yield green_corpsman_request
 
-                #End Green Corpsman Wait Timer
-                self.green_corpsman_wait_timer_end = self.env.now
-                print("Green Corpsman Wait End Time: ", self.green_corpsman_wait_timer_end)
+            #End Green Corpsman Wait Timer
+            self.green_corpsman_wait_timer_end = self.env.now
+            print("Green Corpsman Wait End Time: ", self.green_corpsman_wait_timer_end)
 
-                #Calculate Green Corpsman Wait Time
-                self.green_corpsman_wait_elapsed_time = (self.green_corpsman_wait_timer_end - self.green_corpsman_wait_timer_start)
-                print("Green Corpsman Elapsed Time: ", self.green_corpsman_wait_elapsed_time)
+            #Calculate Green Corpsman Wait Time
+            self.green_corpsman_wait_elapsed_time = (self.green_corpsman_wait_timer_end - self.green_corpsman_wait_timer_start)
+            print("Green Corpsman Elapsed Time: ", self.green_corpsman_wait_elapsed_time)
 
-                #Add To Data
-                if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Waiting for Green Corpsman"].append(float(self.green_corpsman_wait_elapsed_time))
+            #Add To Data
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.individual_times_at_locations_dictionary["Waiting for Green Corpsman"].append(float(self.green_corpsman_wait_elapsed_time))
 
-                #Give The Resource Back To The System For Another Marine To Use
-                self.green_corpsman_resource_definition.release(green_corpsman_request)
-                
-                #CARE
-                #Start Care Timer
-                self.green_corpsman_care_timer_start = self.env.now
-                print("Green Care Start Time: ", self.green_corpsman_care_timer_start)
+            #Give The Resource Back To The System For Another Marine To Use
+            self.green_corpsman_resource_definition.release(green_corpsman_request)
+            
+            #CARE
+            #Start Care Timer
+            self.green_corpsman_care_timer_start = self.env.now
+            print("Green Care Start Time: ", self.green_corpsman_care_timer_start)
 
-                #Calculate How Long Care Will Take
-                green_care_time = numpy.random.lognormal(VariablesAndParameters.green_mean_corpsman_auxillary_treatment_area_consultation, VariablesAndParameters.green_stdev_corpsman_auxillary_treatment_area_consultation)
-                print("Green Care Calculated Time: ", green_care_time) 
+            #Calculate How Long Care Will Take
+            green_care_time = numpy.random.lognormal(VariablesAndParameters.green_mean_corpsman_auxillary_treatment_area_consultation, VariablesAndParameters.green_stdev_corpsman_auxillary_treatment_area_consultation)
+            print("Green Care Calculated Time: ", green_care_time) 
 
-                #Wait That Amount of Care Time
-                #BUG
-                #Uncommenting will cause system to crash
-                yield self.env.timeout(green_care_time)
+            #Wait That Amount of Care Time
+            #BUG
+            #Uncommenting will cause system to crash
+            yield self.env.timeout(green_care_time)
 
-                #Stop Care Timer
-                self.green_corpsman_care_timer_end = self.env.now
-                print("Green Care Timer End: ", self.green_corpsman_care_timer_end)
+            #Stop Care Timer
+            self.green_corpsman_care_timer_end = self.env.now
+            print("Green Care Timer End: ", self.green_corpsman_care_timer_end)
 
-                #Calculate Green Care Time
-                self.green_corpsman_care_elapsed_time = (self.green_corpsman_care_timer_end - self.green_corpsman_care_timer_start)
-                print("Green Care Elapsed Time: ", self.green_corpsman_care_elapsed_time)
+            #Calculate Green Care Time
+            self.green_corpsman_care_elapsed_time = (self.green_corpsman_care_timer_end - self.green_corpsman_care_timer_start)
+            print("Green Care Elapsed Time: ", self.green_corpsman_care_elapsed_time)
 
-                #Add To Data
-                if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["With Green Dedicated Corpsman"].append(float(self.green_corpsman_care_elapsed_time))
-                
-                VariablesAndParameters.run_number += 1
+            #Add To Data
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.individual_times_at_locations_dictionary["With Green Dedicated Corpsman"].append(float(self.green_corpsman_care_elapsed_time))
 
+
+        elif passed_triage_color == "Black":
             #BLACK
-            if self.marine.triage_color == "Black":
-                #LOCATION
-                #Start Black Location Timer
-                self.black_other_location_timer_start = self.env.now
-                print("Black Location Start Time: ", self.black_other_location_timer_start)
+            #LOCATION
+            #Start Black Location Timer
+            self.black_other_location_timer_start = self.env.now
+            print("Black Location Start Time: ", self.black_other_location_timer_start)
 
-                #Request Other Location
-                other_loc_request = self.other_location_resource_definition.request()
+            #Request Other Location
+            other_loc_request = self.other_location_resource_definition.request()
 
-                #Wait Until Request Can Be Fulfilled
-                yield other_loc_request
+            #Wait Until Request Can Be Fulfilled
+            yield other_loc_request
 
-                #End Green Location Timer
-                self.black_other_location_timer_end = self.env.now
-                print("Black Location End Time: ", self.black_other_location_timer_end)
+            #End Green Location Timer
+            self.black_other_location_timer_end = self.env.now
+            print("Black Location End Time: ", self.black_other_location_timer_end)
 
-                #Calculate Black Location Elapsed Time
-                self.black_other_location_elapsed_time = (self.black_other_location_timer_end - self.black_other_location_timer_start)
-                print("Black Location Elapsed Time: ", self.black_other_location_elapsed_time)
+            #Calculate Black Location Elapsed Time
+            self.black_other_location_elapsed_time = (self.black_other_location_timer_end - self.black_other_location_timer_start)
+            print("Black Location Elapsed Time: ", self.black_other_location_elapsed_time)
 
-                #Add To Data
-                if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Other Location"].append(float(self.black_other_location_elapsed_time))
+            #Add To Data
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.individual_times_at_locations_dictionary["Other Location"].append(float(self.black_other_location_elapsed_time))
 
-                #Give The Resource Back To The System For Another Marine To Use
-                self.other_location_resource_definition.release(other_loc_request)     
-                
-                #WAIT FOR CARE
-                #Start Black Doctor Wait Timer
-                self.black_corpsman_wait_timer_start = self.env.now
-                print("Black Corpsman Wait Time Start: ", self.black_corpsman_wait_timer_start)
+            #Give The Resource Back To The System For Another Marine To Use
+            self.other_location_resource_definition.release(other_loc_request)     
+            
+            #WAIT FOR CARE
+            #Start Black Doctor Wait Timer
+            self.black_corpsman_wait_timer_start = self.env.now
+            print("Black Corpsman Wait Time Start: ", self.black_corpsman_wait_timer_start)
 
-                #Request Black Doctor
-                black_corpsman_request = self.black_corpsman_resource_definition.request()
+            #Request Black Doctor
+            black_corpsman_request = self.black_corpsman_resource_definition.request()
 
-                #Wait Until Request Can Be Fulfilled
-                yield black_corpsman_request
+            #Wait Until Request Can Be Fulfilled
+            yield black_corpsman_request
 
-                #End Black Corpsman Wait Timer
-                self.black_corpsman_wait_timer_end = self.env.now
-                print("Black Corpsman Wait End Time: ", self.black_corpsman_wait_timer_end)
+            #End Black Corpsman Wait Timer
+            self.black_corpsman_wait_timer_end = self.env.now
+            print("Black Corpsman Wait End Time: ", self.black_corpsman_wait_timer_end)
 
-                #Calculate Black Corpsman Wait Time
-                self.black_corpsman_wait_elapsed_time = (self.black_corpsman_wait_timer_end - self.black_corpsman_wait_timer_start)
-                print("Black Corpsman Elapsed Time: ", self.black_corpsman_wait_elapsed_time)
+            #Calculate Black Corpsman Wait Time
+            self.black_corpsman_wait_elapsed_time = (self.black_corpsman_wait_timer_end - self.black_corpsman_wait_timer_start)
+            print("Black Corpsman Elapsed Time: ", self.black_corpsman_wait_elapsed_time)
 
-                #Add To Data
-                if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["Waiting for Black Corpsman"].append(float(self.black_corpsman_wait_elapsed_time))
+            #Add To Data
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.individual_times_at_locations_dictionary["Waiting for Black Corpsman"].append(float(self.black_corpsman_wait_elapsed_time))
 
-                #Give The Resource Back To The System For Another Marine To Use
-                self.black_corpsman_resource_definition.release(black_corpsman_request)
-                
-                #CARE
-                #Start Care Timer
-                self.black_corpsman_care_timer_start = self.env.now
-                print("Black Care Start Time: ", self.black_corpsman_care_timer_start)
+            #Give The Resource Back To The System For Another Marine To Use
+            self.black_corpsman_resource_definition.release(black_corpsman_request)
+            
+            #CARE
+            #Start Care Timer
+            self.black_corpsman_care_timer_start = self.env.now
+            print("Black Care Start Time: ", self.black_corpsman_care_timer_start)
 
-                #Calculate How Long Care Will Take
-                black_care_time = numpy.random.lognormal(VariablesAndParameters.black_mean_corpsman_other_location_consultation, VariablesAndParameters.black_stdev_corpsman_other_location_consultation)
-                print("Black Care Calculated Time: ", black_care_time) 
+            #Calculate How Long Care Will Take
+            black_care_time = numpy.random.lognormal(VariablesAndParameters.black_mean_corpsman_other_location_consultation, VariablesAndParameters.black_stdev_corpsman_other_location_consultation)
+            print("Black Care Calculated Time: ", black_care_time) 
 
-                #Wait That Amount of Care Time
-                #BUG
-                #Uncommenting will cause system to crash.
-                yield self.env.timeout(black_care_time)
+            #Wait That Amount of Care Time
+            #BUG
+            #Uncommenting will cause system to crash.
+            yield self.env.timeout(black_care_time)
 
-                #Stop Care Timer
-                self.black_corpsman_care_timer_end = self.env.now
-                print("Black Care Timer End: ", self.black_corpsman_care_timer_end)
+            #Stop Care Timer
+            self.black_corpsman_care_timer_end = self.env.now
+            print("Black Care Timer End: ", self.black_corpsman_care_timer_end)
 
-                #Calculate Black Care Time
-                self.black_corpsman_care_elapsed_time = (self.black_corpsman_care_timer_end - self.black_corpsman_care_timer_start)
-                print("Black Care Elapsed Time: ", self.black_corpsman_care_elapsed_time)
+            #Calculate Black Care Time
+            self.black_corpsman_care_elapsed_time = (self.black_corpsman_care_timer_end - self.black_corpsman_care_timer_start)
+            print("Black Care Elapsed Time: ", self.black_corpsman_care_elapsed_time)
 
-                #Add To Data
-                if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
-                    Track.individual_times_at_locations_dictionary["With Black Dedicated Corpsman"].append(float(self.black_corpsman_care_elapsed_time))
+            #Add To Data
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.individual_times_at_locations_dictionary["With Black Dedicated Corpsman"].append(float(self.black_corpsman_care_elapsed_time))
+        """
 
-                VariablesAndParameters.run_number += 1
+        VariablesAndParameters.run_number += 1
+
+            
 
 #Class representing...
 #CALCULATIONS
@@ -639,7 +645,7 @@ class CalculationsAndConversions:
         individual_marines_priority_count_dataframe = pandas.DataFrame.from_dict(padded_individual_marines_priority_count_dictionary, orient="index")
         print(individual_marines_priority_count_dataframe)
         #Step 4: Output Dataframe as a CSV for future use.
-        individual_marines_priority_count_dataframe.to_csv("individual_marines_priority_count.csv")
+        individual_marines_priority_count_dataframe.to_csv("outputs/individual_marines_priority_count.csv")
         return individual_marines_priority_count_dataframe
 
     def convert_to_dataframe_total_priority_count():
@@ -648,7 +654,7 @@ class CalculationsAndConversions:
         """
         total_marines_priority_count_dataframe = pandas.DataFrame.from_dict(Track.total_priority_count_dictionary, orient="index")
         print(total_marines_priority_count_dataframe)
-        total_marines_priority_count_dataframe.to_csv("total_marines_priority_count.csv")
+        total_marines_priority_count_dataframe.to_csv("outputs/total_marines_priority_count.csv")
         return total_marines_priority_count_dataframe
 
     def convert_to_dataframe_individual_times_at_locations():
@@ -662,7 +668,7 @@ class CalculationsAndConversions:
         
         individual_times_at_locations_dataframe = pandas.DataFrame.from_dict(padded_individual_times_at_locations_dictionary, orient="index")
         print(individual_times_at_locations_dataframe)
-        individual_times_at_locations_dataframe.to_csv("individual_times_at_locations.csv")
+        individual_times_at_locations_dataframe.to_csv("outputs/individual_times_at_locations.csv")
         return individual_times_at_locations_dataframe
 
     def convert_to_dataframe_average_times_at_locations():
@@ -682,7 +688,7 @@ class CalculationsAndConversions:
         if len(set(value_lengths)) == 1 and max_length == 1:
             average_times_at_locations_dataframe = pandas.DataFrame.from_dict(Track.average_times_at_locations_dictionary, orient="index")
             print(average_times_at_locations_dataframe)
-            average_times_at_locations_dataframe.to_csv("average_times_at_locations.csv")
+            average_times_at_locations_dataframe.to_csv("outputs/average_times_at_locations.csv")
         else:
             max_length_average_times_at_locations_dictionary = max_length
     
@@ -692,7 +698,7 @@ class CalculationsAndConversions:
 
             average_times_at_locations_dataframe = pandas.DataFrame.from_dict(padded_average_times_at_locations_dictionary, orient="index")
             print(average_times_at_locations_dataframe)
-            average_times_at_locations_dataframe.to_csv("average_times_at_locations.csv")
+            average_times_at_locations_dataframe.to_csv("outputs/average_times_at_locations.csv")
 
         return average_times_at_locations_dataframe
 
@@ -710,11 +716,11 @@ class CalculationsAndConversions:
             print("Invalid plot type!")
         
         pyplot.title(title)
-        pyplot.savefig(image_filename)
+        pyplot.savefig("outputs/"+image_filename)
      
 #RUNNING THE SYSTEM
 model = MassCasualtySystem()
-model.env.process(model.pickup_and_care_procedures())
+model.env.process(model.triage_generator())
 model.env.run(until=VariablesAndParameters.simulation_time)
 
 #APPLYING CALCULATIONS AND CONVERSIONS AND THEN GRAPHING EVERYTHING
