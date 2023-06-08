@@ -213,7 +213,7 @@ class MassCasualtySystem:
     def triage_generator(self):
         while VariablesAndParameters.run_number < VariablesAndParameters.number_of_runs:
             marine = InstanceOfMarine()
-            self.env.process(self.pickup_and_care_procedures(marine))
+            yield self.env.process(self.pickup_and_care_procedures(marine))
 
     def pickup_and_care_procedures(self, marine):
         #IMPORTANT NOTE TO SELF: regular yield is for events (like resources). Yield timeout is for duration (units of time)
