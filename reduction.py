@@ -2,8 +2,8 @@ import numpy
 import simpy
 import pandas
 
-class Variables:
-    number_of_runs = 10
+class VariablesAndParameters:
+    number_of_runs = 5
     run_number = 0
     simulation_time = 100
     
@@ -11,9 +11,12 @@ class Variables:
     number_of_red_dedicated_doctors = 5
     number_of_yellow_dedicated_doctors = 3
 
+    water_pickup_triage_mean_time = 1.2
+    water_pickup_triage_stdev_time = 1
+
 class Track:
     data_dictionary = {
-        "Initial": [],
+        "Initial Triage": [],
         "Red": [],
         "Yellow": [],
         "Red Time": [],
@@ -21,7 +24,7 @@ class Track:
     }
 class Marine:
     def __init__(self):
-        self.id = Variables.run_number
+        self.id = VariablesAndParameters.run_number
         self.color = numpy.random.choice(["Red", "Yellow"])
 
         #DEBUGGING
@@ -33,30 +36,23 @@ class System:
         self.env = simpy.Environment()
         #Define Our Simulation Resources
         #People
-        self.initial_triage_resource_definition = simpy.PriorityResource(self.env, capacity = Variables.number_of_water_pickup_triage_personnel)
-        self.red_doctor_resource_definition = simpy.PriorityResource(self.env, capacity = Variables.number_of_red_dedicated_doctors)
-        self.yellow_doctor_resource_definition = simpy.PriorityResource(self.env, capacity = Variables.number_of_yellow_dedicated_doctors)
+        self.red_doctor_resource_definition = simpy.PriorityResource(self.env, capacity = VariablesAndParameters.number_of_red_dedicated_doctors)
+        self.yellow_doctor_resource_definition = simpy.PriorityResource(self.env, capacity = VariablesAndParameters.number_of_yellow_dedicated_doctors)
 
     def marine_generator(self):
-        while Variables.run_number < Variables.number_of_runs:
+        while VariablesAndParameters.run_number < VariablesAndParameters.number_of_runs:
             marine = Marine()
             yield self.env.process(self.triage(marine))
     
     
     def triage(self, marine):
-        #Request Initial Triage/Water Pickup
-        
-        self.initial_request = self.initial_triage_resource_definition.request()
-        yield self.initial_request
-        self.triage_time = self.env.now
-        Track.data_dictionary["Initial"].append(self.triage_time)
-        
+
         if marine.color == "Red":
             red_doctor_request = self.red_doctor_resource_definition.request()
             yield red_doctor_request
             print("You're Red")
             self.time = self.env.now
-            Track.data_dictionary["Red"].append(Variables.run_number)
+            Track.data_dictionary["Red"].append(VariablesAndParameters.run_number)
             Track.data_dictionary["Red Time"].append(self.time)
 
         if marine.color == "Yellow":
@@ -64,10 +60,10 @@ class System:
             yield yellow_doctor_request
             print("You're Yellow")
             self.time = self.env.now
-            Track.data_dictionary["Yellow"].append(Variables.run_number)
+            Track.data_dictionary["Yellow"].append(VariablesAndParameters.run_number)
             Track.data_dictionary["Yellow Time"].append(self.time)
 
-        Variables.run_number += 1
+        VariablesAndParameters.run_number += 1
 
 class Conversions:
      def convert_to_dataframe_data():
@@ -85,7 +81,7 @@ class Conversions:
 
 model = System()
 model.env.process(model.marine_generator())
-model.env.run(until=Variables.simulation_time)
+model.env.run(until=VariablesAndParameters.simulation_time)
 
 print(Track.data_dictionary.values())
 Conversions.convert_to_dataframe_data()
