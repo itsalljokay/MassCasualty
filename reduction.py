@@ -374,7 +374,7 @@ class Conversions:
         """
         total_triage_colors_dataframe = pandas.DataFrame.from_dict(Track.total_triage_colors_dictionary, orient="index")
         print(total_triage_colors_dataframe)
-        #total_triage_colors_dataframe.to_csv("outputs/total_triage_colors.csv")
+        total_triage_colors_dataframe.to_csv("outputs/total_triage_colors.csv")
         return total_triage_colors_dataframe
     
     def convert_to_dataframe_triage_times():
@@ -406,17 +406,15 @@ class Conversions:
         if len(set(value_lengths)) == 1 and max_length == 1:
             average_triage_times_dataframe = pandas.DataFrame.from_dict(Track.average_triage_times_dictionary, orient="index")
             print(average_triage_times_dataframe)
-            #average_triage_times_dataframe.to_csv("outputs/average_triage_times.csv")
+            average_triage_times_dataframe.to_csv("outputs/average_triage_times.csv")
         else:
-            #max_length_average_triage_times_dictionary = max_length
-    
             padded_average_triage_times_dictionary = {}
             for key, value in Track.average_triage_times_dictionary.items():
                 padded_average_triage_times_dictionary[key] = [value]
 
             average_triage_times_dataframe = pandas.DataFrame.from_dict(padded_average_triage_times_dictionary, orient="index")
             print(average_triage_times_dataframe)
-            #average_triage_times_dataframe.to_csv("outputs/average_triage_times.csv")
+            average_triage_times_dataframe.to_csv("outputs/average_triage_times.csv")
 
         return average_triage_times_dataframe
 
