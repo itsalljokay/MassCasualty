@@ -37,7 +37,27 @@ class Track:
         "Green": [],
         "Black": []
     }
+    total_triage_colors_dictionary = {
+        "Red": [],
+        "Yellow": [],
+        "Green": [],
+        "Black": []
+    }
     triage_times_dictionary = {
+        "Time To Main Battle Dressing Station": [],
+        "Time To Holding Area": [],
+        "Time To Auxillary Treatment Area": [],
+        "Time To Other Location": [],
+        "Waiting For Red Doctor": [],
+        "Waiting For Yellow Doctor": [],
+        "Waiting For Green Corpsman": [],
+        "Waiting For Black Corpsman": [],
+        "With Red Dedicated Doctor": [],
+        "With Yellow Dedicated Doctor": [],
+        "With Green Dedicated Corpsman": [],
+        "With Black Dedicated Corpsman": []
+    }
+    average_triage_times_dictionary = {
         "Time To Main Battle Dressing Station": [],
         "Time To Holding Area": [],
         "Time To Auxillary Treatment Area": [],
@@ -319,6 +339,22 @@ class System:
         
         VariablesAndParameters.run_number += 1
 
+class Calculations:
+    def total_priority_counts():
+        for key, values in Track.triage_colors_dictionary.items():
+            Track.total_triage_colors_dictionary[key] = len(values)
+        print("Total Triage Colors Dictionary:")
+        print(Track.total_triage_colors_dictionary.values())
+
+    def average_times_at_locations():
+        for key, values in Track.triage_times_dictionary.items():
+            if len(values) > 0:
+                Track.average_triage_times_dictionary[key] = sum(values) / len(values)
+            else:
+                Track.average_triage_times_dictionary[key] = 0
+        print("Average Triage Times Dictionary:")
+        print(Track.average_triage_times_dictionary.values())
+
 class Conversions:
     def convert_to_dataframe_triage_colors():
         max_length_triage_colors_dictionary = max(len(values) for values in Track.triage_colors_dictionary.values())
@@ -331,6 +367,15 @@ class Conversions:
         
         triage_colors_dataframe = pandas.DataFrame.from_dict(padded_triage_colors_dictionary, orient="index")
         print(triage_colors_dataframe)
+
+    def convert_to_dataframe_total_triage_colors():
+        """
+        We don't have to do the padding here. Why? Because all values are the same for every row.
+        """
+        total_triage_colors_dataframe = pandas.DataFrame.from_dict(Track.total_triage_colors_dictionary, orient="index")
+        print(total_triage_colors_dataframe)
+        #total_triage_colors_dataframe.to_csv("outputs/total_triage_colors.csv")
+        return total_triage_colors_dataframe
     
     def convert_to_dataframe_triage_times():
             max_length_triage_times_dictionary = max(len(values) for values in Track.triage_times_dictionary.values())
@@ -344,11 +389,46 @@ class Conversions:
             triage_times_dataframe = pandas.DataFrame.from_dict(padded_triage_times_dictionary, orient="index")
             print(triage_times_dataframe)
 
+    def convert_to_dataframe_average_triage_times():
+        """
+        This one is a little different because sometimes when you run the simulation, you could end up with a marine at
+        every location, in which case checking for max_length will error out because all values are the same, OR...
+        You could not end up with a Marine at every location, and you needed to padd the cell.
+        To check this, we first assume we don't need any padding, and calcualte the length of the first key's values to
+        serve as our first checking point. From there, if another entry has a different length, then we realize we need
+        to padd, and switch our is_padding_needed variable to Yes, or True. Then we break out of this loop to return to
+        the other stuff we needed to do, instead of wasting our time and checking all the other lengths, when we already
+        know we're gonna need to pad.
+        """
+        value_lengths = [1] * len(Track.average_triage_times_dictionary)
+        max_length = 1
+
+        if len(set(value_lengths)) == 1 and max_length == 1:
+            average_triage_times_dataframe = pandas.DataFrame.from_dict(Track.average_triage_times_dictionary, orient="index")
+            print(average_triage_times_dataframe)
+            #average_triage_times_dataframe.to_csv("outputs/average_triage_times.csv")
+        else:
+            #max_length_average_triage_times_dictionary = max_length
+    
+            padded_average_triage_times_dictionary = {}
+            for key, value in Track.average_triage_times_dictionary.items():
+                padded_average_triage_times_dictionary[key] = [value]
+
+            average_triage_times_dataframe = pandas.DataFrame.from_dict(padded_average_triage_times_dictionary, orient="index")
+            print(average_triage_times_dataframe)
+            #average_triage_times_dataframe.to_csv("outputs/average_triage_times.csv")
+
+        return average_triage_times_dataframe
+
 model = System()
 model.env.process(model.marine_generator())
 model.env.run(until=VariablesAndParameters.simulation_time)
 
 print(Track.triage_colors_dictionary.values())
 print(Track.triage_times_dictionary.values())
+Calculations.total_priority_counts()
+Calculations.average_times_at_locations()
 Conversions.convert_to_dataframe_triage_colors()
+Conversions.convert_to_dataframe_total_triage_colors()
 Conversions.convert_to_dataframe_triage_times()
+Conversions.convert_to_dataframe_average_triage_times()
