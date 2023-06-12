@@ -78,8 +78,21 @@ class Track:
     })
     black_dataframe.index.name = "Marine ID"
 
+class Calculations:
+    def get_data():
+        all_data = pandas.concat([
+            Track.red_dataframe,
+            Track.yellow_dataframe,
+            Track.green_dataframe,
+            Track.black_dataframe
+        ], axis=1)
         
-
+        all_data.fillna("", axis="columns", inplace= True)
+        all_data.sort_values(by="Marine ID", inplace = True)
+        return all_data
+    
+    
+     
 class System:
     def __init__(self):
         #Initialize Environment
@@ -97,9 +110,6 @@ class System:
         self.holding_area_resource_definition = simpy.PriorityResource(self.env, capacity = VariablesAndParameters.holding_area_maximum_occupancy)
         self.auxillary_treatment_area_resource_definition = simpy.Resource(self.env, capacity = VariablesAndParameters.auxillary_treatment_area_maximum_occupancy)
         self.other_location_resource_definition = simpy.Resource(self.env, capacity = VariablesAndParameters.other_location_maximum_occupancy)
-
-        #Locations
-        self.main_bds_resource_definition = simpy.PriorityResource(self.env, capacity = VariablesAndParameters.main_bds_maximum_occupancy)
 
     def marine_generator(self):
         while VariablesAndParameters.run_number < VariablesAndParameters.number_of_runs:
@@ -336,3 +346,5 @@ print("GREEN DATAFRAME")
 print(Track.green_dataframe)
 print("BLACK DATAFRAME")
 print(Track.black_dataframe)
+print("ALL DATA")
+print(Calculations.get_data())
