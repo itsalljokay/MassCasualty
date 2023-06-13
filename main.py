@@ -86,10 +86,24 @@ class Calculations:
             Track.green_dataframe,
             Track.black_dataframe
         ], axis=1)
+
+        priority_count = pandas.DataFrame()
         
-        all_data.fillna("", axis="columns", inplace= True)
         all_data.sort_values(by="Marine ID", inplace = True)
-        return all_data
+        all_data["MEAN"] = all_data.mean(axis=1)
+        all_data.loc['MEAN'] = all_data.mean()
+        all_data.fillna("", axis="columns", inplace= True)
+
+        print("DEBUGGING:")
+        red_priority_total = len(Track.red_dataframe.index)
+        yellow_priority_total = len(Track.yellow_dataframe.index)
+        green_priority_total = len(Track.green_dataframe.index)
+        black_priority_total = len(Track.black_dataframe.index)
+
+        priority_count["Colors"] = ["Red", "Yellow", "Green", "Black"]
+        priority_count["Totals"] = [red_priority_total, yellow_priority_total, green_priority_total, black_priority_total]
+
+        return priority_count, all_data
     
     
      
