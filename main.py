@@ -94,7 +94,6 @@ class Calculations:
         all_data.loc['MEAN'] = all_data.mean()
         all_data.fillna("", axis="columns", inplace= True)
 
-        print("DEBUGGING:")
         red_priority_total = len(Track.red_dataframe.index)
         yellow_priority_total = len(Track.yellow_dataframe.index)
         green_priority_total = len(Track.green_dataframe.index)
@@ -103,7 +102,15 @@ class Calculations:
         priority_count["Colors"] = ["Red", "Yellow", "Green", "Black"]
         priority_count["Totals"] = [red_priority_total, yellow_priority_total, green_priority_total, black_priority_total]
 
-        return priority_count, all_data
+        simplified_data = pandas.DataFrame()
+        red_simplified_data = all_data.rename(columns={"Time To Main BDS": "Time To Location", "Waiting For Red Doctor": "Waiting For Care", "With Red Doctor": "Care Time"}, inplace=True)
+        yellow_simplified_data = all_data.rename(columns={"Time To Holding Area": "Time To Location", "Waiting For Yellow Doctor": "Waiting For Care", "With Yellow Doctor": "Care Time"}, inplace=True)
+        green_simplified_data = all_data.rename(columns={"Time To Auxillary Treatment Area": "Time To Location", "Waiting For Green Corpsman": "Waiting For Care", "With Green Corpsman": "Care Time"}, inplace=True)
+        black_simplified_data = all_data.rename(columns={"Time To Other Location": "Time To Location", "Waiting For Black Corpsman": "Waiting For Care", "With Black Corpsman": "Care Time"}, inplace=True)
+        
+        #simplified_data = red_simplified_data.merge(yellow_simplified_data, on="Time To Location")
+        #df4 = pd.merge(pd.merge(df1[['user', 'books']], df2[['user', 'animal']],on='user'),df3[['user', 'place']],on='user')
+        return priority_count, all_data, simplified_data
     
     
      
