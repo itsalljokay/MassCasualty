@@ -2,6 +2,7 @@
 import numpy
 import simpy
 import pandas
+from matplotlib import pyplot
 
 class VariablesAndParameters:
     #Sim Details
@@ -45,41 +46,43 @@ class Marine:
             #DEBUGGING
             print("ID: ", self.id)
             print("Color: ", self.color)
+
 class Track:
     #RED DATA
     red_dataframe = pandas.DataFrame({
-        "Time To Main BDS": [],
-        "Waiting For Red Doctor": [],
-        "With Red Doctor": []
+        "Time To Location": [],
+        "Waiting For Care": [],
+        "Care Time": []
     })
     red_dataframe.index.name = "Marine ID"
 
     #YELLOW DATA
     yellow_dataframe = pandas.DataFrame({
-        "Time To Holding Area": [],
-        "Waiting For Yellow Doctor": [],
-        "With Yellow Doctor": []
+        "Time To Location": [],
+        "Waiting For Care": [],
+        "Care Time": []
     })
     yellow_dataframe.index.name = "Marine ID"
 
     #GREEN DATA
     green_dataframe = pandas.DataFrame({
-        "Time To Auxillary Treatment Area": [],
-        "Waiting For Green Corpsman": [],
-        "With Green Corpsman": []
+        "Time To Location": [],
+        "Waiting For Care": [],
+        "Care Time": []
     })
     green_dataframe.index.name = "Marine ID"
 
     #BLACK DATA
     black_dataframe = pandas.DataFrame({
-        "Time To Other Location": [],
-        "Waiting For Black Corpsman": [],
-        "With Black Corpsman": []
+        "Time To Location": [],
+        "Waiting For Care": [],
+        "Care Time": []
     })
     black_dataframe.index.name = "Marine ID"
 
     #SIMPLIFIED DATA
     simplified_dataframe = pandas.DataFrame({
+        "Triage Color": [],
         "Time To Location": [],
         "Waiting For Care": [],
         "Care Time": []
@@ -105,6 +108,22 @@ class Calculations:
         black_averages["MEAN"] = black_averages.mean(axis=1)
         black_averages.loc["MEAN"] = black_averages.mean()
 
+        
+        #BY COLOR
+        
+        all_averages = pandas.DataFrame({
+        "Time To Location": [],
+        "Waiting For Care": [],
+        "Care Time": []
+    })
+        all_averages.loc["RED"] = red_averages["MEAN"]
+    
+        
+        #REGARDLESS OF COLOR
+        overall_averages = Track.simplified_dataframe
+        overall_averages["MEAN"] = overall_averages.mean(axis=1)
+        overall_averages.loc["MEAN"] = overall_averages.mean()
+
         #FIND PRIORITY COUNTS
         priority_count = pandas.DataFrame()
 
@@ -114,20 +133,44 @@ class Calculations:
         black_priority_total = len(Track.black_dataframe.index)
 
         priority_count["Colors"] = ["Red", "Yellow", "Green", "Black"]
-        priority_count["Totals"] = [red_priority_total, yellow_priority_total, green_priority_total, black_priority_total]
+        priority_count["Totals"] = [red_priority_total, yellow_priority_total, green_priority_total, black_priority_total]  
+
+        return red_averages, yellow_averages, green_averages, black_averages, all_averages, overall_averages, priority_count
+
+"""
+class Graph:
+    def graph(red_averages, yellow_averages, green_averages, black_averages, all_averages, overall_averages, priority_count):
+        red_averages, yellow_averages, green_averages, black_averages, all_averages, overall_averages, priority_count = Calculations.get_data()
         
-        #OUTPUT
-        print("RED AVERAGES")
-        print(red_averages)
-        print("YELLOW AVERAGES")
-        print(yellow_averages)
-        print("GREEN AVERAGES")
-        print(green_averages)
-        print("BLACK AVERAGES")
-        print(black_averages)
-        print("PRIORITY TOTALS")
-        print(priority_count)  
-     
+        #GRAPHS
+        graphs = {
+        "Priority Totals": (priority_count, "bar", "priority_count.png"),
+        "Triage Experience by Marine": (Track.simplified_dataframe, "line", "triage_by_marine.png"),
+        "Average Experiences": (Track.simplified_dataframe, "bar", "average_times.png")
+
+        }
+
+        for title, (function, plot_type, image_filename) in graphs.items():
+            print(title)
+            dataframe = function()
+            Graph.plot_and_save_graph(dataframe, title, plot_type, image_filename)
+
+    def plot_and_save_graph(dataframe, title, plot_type, image_filename):
+        if plot_type == "chart":
+            dataframe.plot()
+        elif plot_type == "histogram":
+            dataframe.hist()
+        elif plot_type == "pie":
+            dataframe.plot(kind="pie", subplots=True, legend=False)
+        elif plot_type == "scatter":
+            for idx, row in dataframe.iterrows():
+                pyplot.scatter([idx] * len(row), row)
+        else:
+            print("Invalid plot type!")
+        
+        pyplot.title(title)
+        pyplot.savefig("outputs/"+image_filename)
+"""
 class System:
     def __init__(self):
         #Initialize Environment
@@ -204,7 +247,7 @@ class System:
             
             #ADD TO DATA
             Track.red_dataframe.loc[marine.id] = [red_main_bds_location_elapsed_time, red_doctor_wait_elapsed_time, red_doctor_care_elapsed_time]
-            Track.simplified_dataframe.loc[marine.id] = [red_main_bds_location_elapsed_time, red_doctor_wait_elapsed_time, red_doctor_care_elapsed_time]
+            Track.simplified_dataframe.loc[marine.id] = [marine.color, red_main_bds_location_elapsed_time, red_doctor_wait_elapsed_time, red_doctor_care_elapsed_time]
         
         if marine.color == "Yellow":
             #MOVE TO HOLDING AREA
@@ -259,7 +302,7 @@ class System:
 
             #ADD TO DATA
             Track.yellow_dataframe.loc[marine.id] = [yellow_holding_area_location_elapsed_time, yellow_doctor_wait_elapsed_time, yellow_doctor_care_elapsed_time]
-            Track.simplified_dataframe.loc[marine.id] = [yellow_holding_area_location_elapsed_time, yellow_doctor_wait_elapsed_time, yellow_doctor_care_elapsed_time]
+            Track.simplified_dataframe.loc[marine.id] = [marine.color, yellow_holding_area_location_elapsed_time, yellow_doctor_wait_elapsed_time, yellow_doctor_care_elapsed_time]
 
         if marine.color == "Green":
             #MOVE TO AUXILLARY TREATMENT AREA
@@ -314,7 +357,7 @@ class System:
 
             #ADD TO DATA
             Track.green_dataframe.loc[marine.id] = [green_aux_treatment_location_elapsed_time, green_corpsman_wait_elapsed_time, green_corpsman_care_elapsed_time]
-            Track.simplified_dataframe.loc[marine.id] = [green_aux_treatment_location_elapsed_time, green_corpsman_wait_elapsed_time, green_corpsman_care_elapsed_time]
+            Track.simplified_dataframe.loc[marine.id] = [marine.color, green_aux_treatment_location_elapsed_time, green_corpsman_wait_elapsed_time, green_corpsman_care_elapsed_time]
 
         if marine.color == "Black":
             #MOVE TO OTHER LOCATION
@@ -369,7 +412,7 @@ class System:
 
             #ADD TO DATA
             Track.black_dataframe.loc[marine.id] = [black_other_location_elapsed_time, black_corpsman_wait_elapsed_time, black_corpsman_care_elapsed_time]
-            Track.simplified_dataframe.loc[marine.id] = [black_other_location_elapsed_time, black_corpsman_wait_elapsed_time, black_corpsman_care_elapsed_time]
+            Track.simplified_dataframe.loc[marine.id] = [marine.color, black_other_location_elapsed_time, black_corpsman_wait_elapsed_time, black_corpsman_care_elapsed_time]
 
         VariablesAndParameters.run_number += 1
 
@@ -391,3 +434,5 @@ print(Track.simplified_dataframe)
 
 #CALCULATED DATA
 print(Calculations.get_data())
+
+#GRAPHS
