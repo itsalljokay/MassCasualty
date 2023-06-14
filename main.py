@@ -78,21 +78,35 @@ class Track:
     })
     black_dataframe.index.name = "Marine ID"
 
+    #SIMPLIFIED DATA
+    simplified_dataframe = pandas.DataFrame({
+        "Time To Location": [],
+        "Waiting For Care": [],
+        "Care Time": []
+    })
+    black_dataframe.index.name = "Marine ID"
+
 class Calculations:
     def get_data():
-        all_data = pandas.concat([
-            Track.red_dataframe,
-            Track.yellow_dataframe,
-            Track.green_dataframe,
-            Track.black_dataframe
-        ], axis=1)
+        #FIND AVERAGES
+        red_averages = Track.red_dataframe
+        red_averages["MEAN"] = red_averages.mean(axis=1)
+        red_averages.loc["MEAN"] = red_averages.mean()
 
+        yellow_averages = Track.yellow_dataframe
+        yellow_averages["MEAN"] = yellow_averages.mean(axis=1)
+        yellow_averages.loc["MEAN"] = yellow_averages.mean()
+
+        green_averages = Track.green_dataframe
+        green_averages["MEAN"] = green_averages.mean(axis=1)
+        green_averages.loc["MEAN"] = green_averages.mean()
+
+        black_averages = Track.black_dataframe
+        black_averages["MEAN"] = black_averages.mean(axis=1)
+        black_averages.loc["MEAN"] = black_averages.mean()
+
+        #FIND PRIORITY COUNTS
         priority_count = pandas.DataFrame()
-        
-        all_data.sort_values(by="Marine ID", inplace = True)
-        all_data["MEAN"] = all_data.mean(axis=1)
-        all_data.loc['MEAN'] = all_data.mean()
-        all_data.fillna("", axis="columns", inplace= True)
 
         red_priority_total = len(Track.red_dataframe.index)
         yellow_priority_total = len(Track.yellow_dataframe.index)
@@ -101,18 +115,18 @@ class Calculations:
 
         priority_count["Colors"] = ["Red", "Yellow", "Green", "Black"]
         priority_count["Totals"] = [red_priority_total, yellow_priority_total, green_priority_total, black_priority_total]
-
-        simplified_data = pandas.DataFrame()
-        red_simplified_data = all_data.rename(columns={"Time To Main BDS": "Time To Location", "Waiting For Red Doctor": "Waiting For Care", "With Red Doctor": "Care Time"}, inplace=True)
-        yellow_simplified_data = all_data.rename(columns={"Time To Holding Area": "Time To Location", "Waiting For Yellow Doctor": "Waiting For Care", "With Yellow Doctor": "Care Time"}, inplace=True)
-        green_simplified_data = all_data.rename(columns={"Time To Auxillary Treatment Area": "Time To Location", "Waiting For Green Corpsman": "Waiting For Care", "With Green Corpsman": "Care Time"}, inplace=True)
-        black_simplified_data = all_data.rename(columns={"Time To Other Location": "Time To Location", "Waiting For Black Corpsman": "Waiting For Care", "With Black Corpsman": "Care Time"}, inplace=True)
         
-        #simplified_data = red_simplified_data.merge(yellow_simplified_data, on="Time To Location")
-        #df4 = pd.merge(pd.merge(df1[['user', 'books']], df2[['user', 'animal']],on='user'),df3[['user', 'place']],on='user')
-        return priority_count, all_data, simplified_data
-    
-    
+        #OUTPUT
+        print("RED AVERAGES")
+        print(red_averages)
+        print("YELLOW AVERAGES")
+        print(yellow_averages)
+        print("GREEN AVERAGES")
+        print(green_averages)
+        print("BLACK AVERAGES")
+        print(black_averages)
+        print("PRIORITY TOTALS")
+        print(priority_count)  
      
 class System:
     def __init__(self):
@@ -190,6 +204,7 @@ class System:
             
             #ADD TO DATA
             Track.red_dataframe.loc[marine.id] = [red_main_bds_location_elapsed_time, red_doctor_wait_elapsed_time, red_doctor_care_elapsed_time]
+            Track.simplified_dataframe.loc[marine.id] = [red_main_bds_location_elapsed_time, red_doctor_wait_elapsed_time, red_doctor_care_elapsed_time]
         
         if marine.color == "Yellow":
             #MOVE TO HOLDING AREA
@@ -244,6 +259,7 @@ class System:
 
             #ADD TO DATA
             Track.yellow_dataframe.loc[marine.id] = [yellow_holding_area_location_elapsed_time, yellow_doctor_wait_elapsed_time, yellow_doctor_care_elapsed_time]
+            Track.simplified_dataframe.loc[marine.id] = [yellow_holding_area_location_elapsed_time, yellow_doctor_wait_elapsed_time, yellow_doctor_care_elapsed_time]
 
         if marine.color == "Green":
             #MOVE TO AUXILLARY TREATMENT AREA
@@ -298,7 +314,8 @@ class System:
 
             #ADD TO DATA
             Track.green_dataframe.loc[marine.id] = [green_aux_treatment_location_elapsed_time, green_corpsman_wait_elapsed_time, green_corpsman_care_elapsed_time]
-        
+            Track.simplified_dataframe.loc[marine.id] = [green_aux_treatment_location_elapsed_time, green_corpsman_wait_elapsed_time, green_corpsman_care_elapsed_time]
+
         if marine.color == "Black":
             #MOVE TO OTHER LOCATION
             #Start Black Location Timer
@@ -352,6 +369,7 @@ class System:
 
             #ADD TO DATA
             Track.black_dataframe.loc[marine.id] = [black_other_location_elapsed_time, black_corpsman_wait_elapsed_time, black_corpsman_care_elapsed_time]
+            Track.simplified_dataframe.loc[marine.id] = [black_other_location_elapsed_time, black_corpsman_wait_elapsed_time, black_corpsman_care_elapsed_time]
 
         VariablesAndParameters.run_number += 1
 
@@ -359,6 +377,7 @@ model = System()
 model.env.process(model.marine_generator())
 model.env.run(until=VariablesAndParameters.simulation_time)
 
+#DATA
 print("RED DATAFRAME")
 print(Track.red_dataframe)
 print("YELLOW DATAFRAME")
@@ -368,4 +387,7 @@ print(Track.green_dataframe)
 print("BLACK DATAFRAME")
 print(Track.black_dataframe)
 print("ALL DATA")
+print(Track.simplified_dataframe)
+
+#CALCULATED DATA
 print(Calculations.get_data())
