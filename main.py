@@ -1,8 +1,21 @@
 #IMPORTS
+import os
 import numpy
 import simpy
 import pandas
 from matplotlib import pyplot
+
+#CREATE FILE STRUCTURE TO STORE THINGS
+current_location = os.getcwd()
+directories = {
+    "outputs",
+    "outputs/csv",
+    "outputs/graphs"
+
+}
+for directory in directories:
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
 class VariablesAndParameters:
     #Sim Details
@@ -90,89 +103,115 @@ class Track:
     black_dataframe.index.name = "Marine ID"
 
 class Calculations:
+    #DATAFRAMES
+    red_averages = Track.red_dataframe
+    yellow_averages = Track.yellow_dataframe
+    green_averages = Track.green_dataframe
+    black_averages = Track.black_dataframe
+    all_averages = Track.simplified_dataframe
+    overall_averages = Track.simplified_dataframe
+    priority_count = pandas.DataFrame()
+
     def get_data():
         #FIND AVERAGES
-        red_averages = Track.red_dataframe
-        red_averages["MEAN"] = red_averages.mean(axis=1)
-        red_averages.loc["MEAN"] = red_averages.mean()
-        red_averages.to_csv("outputs/csv/red_averages_seperate.csv")
+        Calculations.red_averages["MEAN"] = Calculations.red_averages.mean(axis=1)
+        Calculations.red_averages.loc["MEAN"] = Calculations.red_averages.mean()
+        Calculations.red_averages.to_csv("outputs/csv/red_averages_seperate.csv")
 
-        yellow_averages = Track.yellow_dataframe
-        yellow_averages["MEAN"] = yellow_averages.mean(axis=1)
-        yellow_averages.loc["MEAN"] = yellow_averages.mean()
-        yellow_averages.to_csv("outputs/csv/yellow_averages_seperate.csv")
+        Calculations.yellow_averages["MEAN"] = Calculations.yellow_averages.mean(axis=1)
+        Calculations.yellow_averages.loc["MEAN"] = Calculations.yellow_averages.mean()
+        Calculations.yellow_averages.to_csv("outputs/csv/yellow_averages_seperate.csv")
 
-        green_averages = Track.green_dataframe
-        green_averages["MEAN"] = green_averages.mean(axis=1)
-        green_averages.loc["MEAN"] = green_averages.mean()
-        green_averages.to_csv("outputs/csv/green_averages_seperate.csv")
+        Calculations.green_averages["MEAN"] = Calculations.green_averages.mean(axis=1)
+        Calculations.green_averages.loc["MEAN"] = Calculations.green_averages.mean()
+        Calculations.green_averages.to_csv("outputs/csv/green_averages_seperate.csv")
 
-        black_averages = Track.black_dataframe
-        black_averages["MEAN"] = black_averages.mean(axis=1)
-        black_averages.loc["MEAN"] = black_averages.mean()
-        black_averages.to_csv("outputs/csv/black_averages_seperate.csv")
+        Calculations.black_averages["MEAN"] = Calculations.black_averages.mean(axis=1)
+        Calculations.black_averages.loc["MEAN"] = Calculations.black_averages.mean()
+        Calculations.black_averages.to_csv("outputs/csv/black_averages_seperate.csv")
 
         
         #BY COLOR
         #"The average [TRIAGE COLOR] Marine spends this amount of time..."
-        all_averages = Track.simplified_dataframe.groupby("Triage Color").mean()
-        all_averages.to_csv("outputs/csv/all_averages_combined.csv")
+        Calculations.all_averages.groupby("Triage Color").mean()
+        Calculations.all_averages.to_csv("outputs/csv/average_by_triage_color.csv")
     
         #REGARDLESS OF COLOR
         #"The average Marine regardless of triage color spends this amount of time..."
-        overall_averages = Track.simplified_dataframe
-        overall_averages["MEAN"] = overall_averages.mean(axis=1)
-        overall_averages.loc["MEAN"] = overall_averages.mean()
-        overall_averages.to_csv("outputs/csv/overall_averages.csv")
+        Calculations.overall_averages["MEAN"] = Calculations.overall_averages.mean(axis=1)
+        Calculations.overall_averages.loc["MEAN"] = Calculations.overall_averages.mean()
+        Calculations.overall_averages.to_csv("outputs/csv/average_regardless_of_triage_color.csv")
 
 
         #FIND PRIORITY COUNTS
-        priority_count = pandas.DataFrame()
 
         red_priority_total = len(Track.red_dataframe.index)
         yellow_priority_total = len(Track.yellow_dataframe.index)
         green_priority_total = len(Track.green_dataframe.index)
         black_priority_total = len(Track.black_dataframe.index)
 
-        priority_count["Colors"] = ["Red", "Yellow", "Green", "Black"]
-        priority_count["Totals"] = [red_priority_total, yellow_priority_total, green_priority_total, black_priority_total]
-        priority_count.to_csv("outputs/csv/priority_count.csv")  
+        Calculations.priority_count["Colors"] = ["Red", "Yellow", "Green", "Black"]
+        Calculations.priority_count["Totals"] = [red_priority_total, yellow_priority_total, green_priority_total, black_priority_total]
+        Calculations.priority_count.to_csv("outputs/csv/priority_count.csv")  
 
-        return red_averages, yellow_averages, green_averages, black_averages, overall_averages, priority_count, all_averages
-"""
+        return Calculations.red_averages, Calculations.yellow_averages, Calculations.green_averages, Calculations.black_averages, Calculations.overall_averages, Calculations.priority_count, Calculations.all_averages
+
 class Graph:
-    def graph(red_averages, yellow_averages, green_averages, black_averages, all_averages, overall_averages, priority_count):
-        red_averages, yellow_averages, green_averages, black_averages, all_averages, overall_averages, priority_count = Calculations.get_data()
+    #POTENTIALLY NEEDED
+    #priority_count.drop(columns="Triage Color")
+    def priority_totals():
+        priority_count = Calculations.priority_count
+        fig, ax = pyplot.subplots()
+        x_labels = ["Red", "Yellow", "Green", "Black"]
+        values = priority_count["Totals"].values.tolist()
+        bar_colors = ["red", "yellow", "green", "blue"]
+        filename = "priority_counts.png"
+
+        bars = ax.bar(x_labels, values, color=bar_colors)
+        ax.set_ylabel("Number of Marines")
+        ax.set_title("Priority Counts")
+        
+        for bar in bars:
+            height = bar.get_height()
+            height = bar.get_height()
+            x = bar.get_x()
+            width = bar.get_width()
+            ax.annotate(height,
+                        xy=(x + width / 2, height / 2),  # Position annotation in the middle of the bar body
+                        xytext=(0, 0),  # No offset for text position
+                        textcoords="offset points",
+                        ha='center', va='center')
+
+        pyplot.savefig("outputs/graphs/"+filename)
+
+    def graph(overall_averages, priority_count, all_averages):
+        all_averages, overall_averages, priority_count = Calculations.get_data()
         
         #GRAPHS
+
         graphs = {
         "Priority Totals": (priority_count, "bar", "priority_count.png"),
-        "Triage Experience by Marine": (Track.simplified_dataframe, "line", "triage_by_marine.png"),
-        "Average Experiences": (Track.simplified_dataframe, "bar", "average_times.png")
+        "Triage Experience by Individual Marine": (Track.simplified_dataframe, "line", "triage_by_marine.png"),
+        "Average Experience by Triage Color": (all_averages, "line", "average_by_triage_color.png"),
+        "Average Experience Regardless of Triage Color": (overall_averages, "line", "average_regardless_of_triage_color.png")
 
         }
 
-        for title, (function, plot_type, image_filename) in graphs.items():
+        for title, (dataframe, plot_type, image_filename) in graphs.items():
             print(title)
-            dataframe = function()
             Graph.plot_and_save_graph(dataframe, title, plot_type, image_filename)
 
     def plot_and_save_graph(dataframe, title, plot_type, image_filename):
-        if plot_type == "chart":
-            dataframe.plot()
-        elif plot_type == "histogram":
-            dataframe.hist()
-        elif plot_type == "pie":
-            dataframe.plot(kind="pie", subplots=True, legend=False)
-        elif plot_type == "scatter":
-            for idx, row in dataframe.iterrows():
-                pyplot.scatter([idx] * len(row), row)
+        if plot_type == "bar":
+            fig, ax = pyplot.subplots()
+            x_labels = []
+        #elif plot_type == "histogram":
         else:
             print("Invalid plot type!")
         
         pyplot.title(title)
-        pyplot.savefig("outputs/"+image_filename)
-"""
+        pyplot.savefig("outputs/graphs/"+image_filename)
+
 class System:
     def __init__(self):
         #Initialize Environment
@@ -438,3 +477,4 @@ print(Track.simplified_dataframe)
 print(Calculations.get_data())
 
 #GRAPHS
+Graph.priority_totals()
