@@ -59,8 +59,9 @@ class VariablesAndParameters:
     duration_of_simulation_in_minutes = 10
     simulation_time = (duration_of_simulation_in_minutes * 60)
     #A Note On Warm Up Variable:
-    #For event simulations, it's important to include some warm-up runs so that they data you glean is as accurate to
-    #the real situation as possible. Warmups help eliminate accidental start-up biases.
+    #For event simulations, it's important to include some warm-up runs so that the data you glean is as accurate to
+    #the real situation as possible. Warmups help eliminate accidental start-up biases. Due to this, data is not collected
+    #until after the warmup period has ended.
     
     #A Note On Simulation Duration:
     #This is how long each run will take. Set this accordingly to your scenario. Designed to keep from encountering an
@@ -68,22 +69,33 @@ class VariablesAndParameters:
     
     #A Note On Simulation Time:
     #Simulation time is technically unitless. This means we pick something and stick to it. For this simulation, seconds
-    #have been chosen as it is an appropriate unit of measurement for a combat triage situation.
-    #Read more here: 
+    #have been chosen as it is an appropriate unit of measurement for a combat triage situation. For ease of use, duration
+    #entered in minutes will automatically be converted to seconds.
+    #Read more here: https://simpy.readthedocs.io/en/latest/topical_guides/environments.html
 
     #People Involved
-    #We are calculating how many Marines we can handle before resources are swamped or strained. Therefore, marine_counter starts and stays at 0.
     marine_counter = 0
     number_of_red_dedicated_doctors = 281
     number_of_yellow_dedicated_doctors = 260
     number_of_green_dedicated_corpsmen = 239
     number_of_black_dedicated_corpsmen = 239
+    #A Note On Marine Counter:
+    #We are calculating how many Marines we can handle before resources are swamped or strained. marine_counter keeps track of the number
+    #of Marines in the system.
+
+    #A Note On Dedicated Personnel:
+    #This can be changed to be more accurate as data is available. Current numbers are gleaned from available Internet sources, and guessing
+    #at a best estimate for any data not supplied.
+    #https://en.wikipedia.org/wiki/USNS_Mercy
+    #https://www.msc.usff.navy.mil/Ships/Mercy/Statistics/
 
     #Location Occupancy
     main_bds_maximum_occupancy = 92
     holding_area_maximum_occupancy = 280
     auxillary_treatment_area_maximum_occupancy = 370
     other_location_maximum_occupancy = 270
+    #A Note On Occupancy:
+    #See note on Dedicated Personnel.
 
     #How Long It Takes To Do Things
     #Gonna want to mess around with a lognormal calculator and see what some acceptable samples could be.
@@ -95,16 +107,35 @@ class VariablesAndParameters:
     green_stdev_corpsman_auxillary_treatment_area_consultation = 1
     black_mean_corpsman_other_location_consultation = 2
     black_stdev_corpsman_other_location_consultation = 1
+    #A Note On Durations
+    #A lognormal distribution is utilized in this simulation as it provides a normal distribution of a random variable with only positive
+    #real numbers. A lognormal sample calculator was used to come up with best guess for duration of care times for each priority color.
+    #Lognormal Calculator: https://www.omnicalculator.com/statistics/lognormal-distribution
+    #More on lognormal distributions: https://en.wikipedia.org/wiki/Log-normal_distribution 
 
+#MARINE INSTANCE
+"""
+Purpose: Detail the entity of a Marine for the simulation.
+"""
 class Marine:
+        #Initialization. Will Occur Every Time Simulation Runs.
         def __init__(self):
             self.id = VariablesAndParameters.run_number
             self.color = numpy.random.choice(["Red", "Yellow", "Green", "Black"])
-
-            #DEBUGGING
+            #A Note On ID and Color:
+            #Every Marine in the system recieves a unique ID that corresponds to the simulation run number. Marine 0 is the Marine triaged
+            #during simulation 0, Marine 1 is the Marine triaged on simulation 1, etc. Each Marine also recieves a randomized color which
+            #corresponds to their triage color code. This color coding corresponds to standard mass casualty triage color coding.
+            #More on Mass Casualty Triage Color Code: https://www.ncbi.nlm.nih.gov/books/NBK459369/
+            
+            #Output
             print("ID: ", self.id)
             print("Color: ", self.color)
 
+#DATA TRACKING
+"""
+Purpose: Track data as the simulation runs.
+"""
 class Track:
     #RED DATA
     red_dataframe = pandas.DataFrame({
@@ -146,9 +177,18 @@ class Track:
         "Care Time": []
     })
     simplified_dataframe.index.name = "Marine ID"
+    #A Note on Simplified Data:
+    #In the Simplified Dataframe every Marine is tracked. You will notice that the specific location or care personnel details are ommitted
+    #in favor of the universal "Time to Location", "Waiting For Care", or "Care Time" categories. The data here will be the same as the data
+    #logged in the corresponding color dataframe, but makes for easier calculations and visualization of full data later on.
 
+#DATA CALCULATIONS
+"""
+Purpose: Conduct calculations on collected data.
+"""
 class Calculations:
     #DATAFRAMES
+    #Pull in our tracked data and save it to a new dataframe to keep from overwriting.
     red_averages = Track.red_dataframe
     yellow_averages = Track.yellow_dataframe
     green_averages = Track.green_dataframe
@@ -175,7 +215,6 @@ class Calculations:
         Calculations.black_averages.loc["MEAN"] = Calculations.black_averages.mean()
         Calculations.black_averages.to_csv("outputs/csv/black_averages_seperate.csv")
 
-        
         #BY COLOR
         #"The average [TRIAGE COLOR] Marine spends this amount of time..."
         Calculations.all_averages = Calculations.all_averages.groupby("Triage Color").mean()
@@ -187,22 +226,26 @@ class Calculations:
         Calculations.overall_averages.loc["MEAN"] = Calculations.overall_averages.mean(numeric_only=True)
         Calculations.overall_averages.to_csv("outputs/csv/average_regardless_of_triage_color.csv")
 
-
-        #FIND PRIORITY COUNTS
-
+        #PRIORITY COUNTS
+        #"There were x number of Red Marines, x number of Yellow Marines, etc..."
         red_priority_total = len(Track.red_dataframe.index)
         yellow_priority_total = len(Track.yellow_dataframe.index)
         green_priority_total = len(Track.green_dataframe.index)
         black_priority_total = len(Track.black_dataframe.index)
-
         Calculations.priority_count["Colors"] = ["Red", "Yellow", "Green", "Black"]
         Calculations.priority_count["Totals"] = [red_priority_total, yellow_priority_total, green_priority_total, black_priority_total]
         Calculations.priority_count.to_csv("outputs/csv/priority_count.csv")  
 
         return Calculations.red_averages, Calculations.yellow_averages, Calculations.green_averages, Calculations.black_averages, Calculations.overall_averages, Calculations.priority_count, Calculations.all_averages
 
+#GRAPHING DATA
+"""
+Purpose: Design and print graphs of our collected and calculated data.
+"""
 class Graph:
+    #Graph for Priority Totals
     def priority_totals_graph():
+        #Set Graph Details
         priority_count = Calculations.priority_count
         fig, ax = pyplot.subplots()
         x_labels = ["Red", "Yellow", "Green", "Black"]
@@ -210,10 +253,12 @@ class Graph:
         bar_colors = ["red", "yellow", "green", "blue"]
         filename = "priority_counts.png"
 
+        #Set Design Options
         bars = ax.bar(x_labels, values, color=bar_colors)
         ax.set_ylabel("Number of Marines")
         ax.set_title("Priority Counts")
         
+        #Annotate Each Bar With Its Value
         for bar in bars:
             height = bar.get_height()
             height = bar.get_height()
@@ -225,10 +270,18 @@ class Graph:
                         textcoords="offset points",
                         ha='center', va='center')
 
+        #Save Graph
         pyplot.savefig("outputs/graphs/"+filename)
 
+    #Graph for Experience By Individual Marine (Every Color Present)
     def experience_by_individual_marine_graph():
+        #Set Graph Details
         filename = "experience_by_individual.png"
+        fig, ax1 = pyplot.subplots()
+        ax2 = ax1.twinx()
+        time_categories = ["Time To Location", "Waiting For Care", "Care Time"]
+        y_positions = numpy.arange(len(time_categories))
+        annotated_positions = set()
         color_mapping = {
             "Red": "red",
             "Yellow": "yellow",
@@ -236,41 +289,37 @@ class Graph:
             "Black": "black"
         }
 
-        fig, ax1 = pyplot.subplots()
-        ax2 = ax1.twinx()
-
-        time_categories = ["Time To Location", "Waiting For Care", "Care Time"]
-        y_positions = numpy.arange(len(time_categories))
-
-        annotated_positions = set()
-
+        #Specifying Graph Design
         for row in Track.simplified_dataframe.iterrows():
             triage_color = row[1]["Triage Color"]
             time_values = [row[1][category] for category in time_categories]
             
-            # Check for NaN values in triage_color or time_values
+            #Check For NaN Values In triage_color Or time_values
             if pandas.isna(triage_color) or any(pandas.isna(time_values)):
-                continue  # Skip this iteration if any value is NaN
+                continue  #Skip if value is NaN
             
-            # Plot the dots
+            #Plot The Dots
             ax1.plot(time_categories, time_values, marker="o", color=color_mapping.get(triage_color, "black"))
             
-            # Plot the lines
+            #Connect The Dots With Lines
             ax1.plot(time_categories, time_values, color=color_mapping.get(triage_color, "black"))
             
-            # Add value annotation for each dot except the last one (Care Time)
+            #Add Value Annotation For Each Dot Except Last One (Care Time)
             for i in range(len(time_categories) - 1):
                 x_pos = time_categories[i]
                 y_pos = time_values[i]
                 value = f"{y_pos:.2f}"
                 
-                # Check if position is already annotated
+                #Check If Position Is Already Annotated
                 if (x_pos, y_pos) in annotated_positions:
                     continue
-                
+                #Annotate
                 ax1.annotate(value, (x_pos, y_pos), textcoords="offset points", xytext=(0, 10), ha="center")
                 annotated_positions.add((x_pos, y_pos))
-
+                #A Note On Value Annotations:
+                #This can be adjusted if the graph gets overcrowded. During intial testing Care Time quickly became over saturated with values.
+        
+        #Set More Graph Details
         ax1.set_xlabel("Triage Color")
         ax1.set_ylabel("Time")
         ax2.set_ylabel("Time")
@@ -278,21 +327,29 @@ class Graph:
         ax1.set_xticks(y_positions)
         ax1.set_xticklabels(time_categories)
 
-        # Set the desired number of intervals and the interval size for the y-axis
+        #Set The Desired Number of Intervals And Interval Size For Y-Axis
         num_intervals = 10
         interval_size = 5
 
-        # Set the y-axis ticks and labels for both left and right y-axes
+        #Set Y-Axis Ticks And Labels For Both Left And Right Y-Axes
         y_ticks = numpy.arange(0, num_intervals * interval_size + interval_size, interval_size)
         ax1.set_yticks(y_ticks)
         ax2.set_yticks(y_ticks)
         ax1.set_yticklabels(y_ticks)
         ax2.set_yticklabels(y_ticks)
         
+        #Save Graph
         pyplot.savefig("outputs/graphs/"+filename)
 
+    #Graph For Average Experience By Triage Color
     def average_experience_by_triage_color():
+        #Set Graph Details
         filename = "average_experience_by_triage_color.png"
+        fig, ax1 = pyplot.subplots()
+        ax2 = ax1.twinx()
+        time_categories = ["Time To Location", "Waiting For Care", "Care Time"]
+        y_positions = numpy.arange(len(time_categories))
+        annotated_positions = set()
         color_mapping = {
             "Red": "red",
             "Yellow": "yellow",
@@ -300,42 +357,34 @@ class Graph:
             "Black": "black"
         }
 
-        fig, ax1 = pyplot.subplots()
-        ax2 = ax1.twinx()
-
-        time_categories = ["Time To Location", "Waiting For Care", "Care Time"]
-        y_positions = numpy.arange(len(time_categories))
-
-        annotated_positions = set()
-
+        #Specifying Graph Design
         for triage_color, row in Calculations.all_averages.iterrows():
             time_values = row[time_categories]
             
-            # Check for NaN values in time_values
+            #Check For NaN Values In time_values
             if any(pandas.isna(time_values)):
-                continue  # Skip this iteration if any value is NaN
+                continue  #Skip if value is NaN
             
-            # Plot the dots
+            #Plot The Dots
             ax1.plot(time_categories, time_values, marker="o", color=color_mapping.get(triage_color, "black"))
             
-            # Plot the lines
+            #Connect The Dots With Lines
             ax1.plot(time_categories, time_values, color=color_mapping.get(triage_color, "black"))
             
-            # Add value annotation for each dot except the last one (Care Time)
+            #Add Value Annotation For Each Dot Except Last One (Care Time)
             for i in range(len(time_categories) - 1):
                 x_pos = time_categories[i]
                 y_pos = time_values[i]
                 value = f"{y_pos:.2f}"
                 
-                # Check if position is already annotated
+                #Check If Position Is Already Annotated
                 if (x_pos, y_pos) in annotated_positions:
                     continue
-                
+                #Annotate
                 ax1.annotate(value, (x_pos, y_pos), textcoords="offset points", xytext=(0, 10), ha="center")
                 annotated_positions.add((x_pos, y_pos))
-            
-            # Skip value annotation for the last dot (Care Time)
 
+        #Set More Graph Details
         ax1.set_xlabel("Triage Color")
         ax1.set_ylabel("Time")
         ax2.set_ylabel("Time")
@@ -343,32 +392,35 @@ class Graph:
         ax1.set_xticks(y_positions)
         ax1.set_xticklabels(time_categories)
 
-        # Set the desired number of intervals and the interval size for the y-axis
+        #Set The Desired Number of Intervals And Interval Size For Y-Axis
         num_intervals = 10
         interval_size = 5
 
-        # Set the y-axis ticks and labels for both left and right y-axes
+        #Set Y-Axis Ticks And Labels For Both Left And Right Y-Axes
         y_ticks = numpy.arange(0, num_intervals * interval_size + interval_size, interval_size)
         ax1.set_yticks(y_ticks)
         ax2.set_yticks(y_ticks)
         ax1.set_yticklabels(y_ticks)
         ax2.set_yticklabels(y_ticks)
         
+        #Save Graph
         pyplot.savefig("outputs/graphs/"+filename)
 
+    #Graph For Average Experience Regardless of Triage Color
     def average_experience_regardless_of_color():
+        #Set Graph Details
         filename = "average_experience_regardless_of_color.png"
         fig, ax1 = pyplot.subplots()
         ax2 = ax1.twinx()
-
         time_categories = ["Time To Location", "Waiting For Care", "Care Time"]
         y_positions = numpy.arange(len(time_categories))
-
         overall_average = Calculations.overall_averages.loc["MEAN", time_categories]
 
+        #Plot Data
         ax1.plot(time_categories, overall_average, marker="o", color="black")
         ax1.plot(time_categories, overall_average, color="black")
 
+        #Set More Graph Details
         ax1.set_xlabel("Average Marine Regardless of Triage Color")
         ax1.set_ylabel("Time")
         ax2.set_ylabel("Time")
@@ -376,28 +428,33 @@ class Graph:
         ax1.set_xticks(y_positions)
         ax1.set_xticklabels(time_categories)
 
-        # Set the desired number of intervals and the interval size for the y-axis
+        #Set The Desired Number of Intervals And Interval Size For Y-Axis
         num_intervals = 10
         interval_size = 5
 
-        # Set the y-axis ticks and labels for both left and right y-axes
+        #Set Y-Axis Ticks And Labels For Both Left And Right Y-Axes
         y_ticks = numpy.arange(0, num_intervals * interval_size + interval_size, interval_size)
         ax1.set_yticks(y_ticks)
         ax2.set_yticks(y_ticks)
         ax1.set_yticklabels(y_ticks)
         ax2.set_yticklabels(y_ticks)
 
-        # Add value annotation for each dot
+        #Add Value Annotations For Each Dot
         for i in range(len(time_categories)):
             x_pos = time_categories[i]
             y_pos = overall_average[i]
             value = f"{y_pos:.2f}"
             ax1.annotate(value, (x_pos, y_pos), textcoords="offset points", xytext=(0, 10), ha="center")
 
-
+        #Save Graph
         pyplot.savefig("outputs/graphs/"+filename)
 
+#SIMULATION SYSTEM
+"""
+Purpose: Detailing the triage process.
+"""
 class System:
+    #Initialization. Will Occur Every Time Simulation Runs.
     def __init__(self):
         #Initialize Environment
         self.env = simpy.Environment()
@@ -408,6 +465,8 @@ class System:
         self.yellow_doctor_resource_definition = simpy.PriorityResource(self.env, capacity = VariablesAndParameters.number_of_yellow_dedicated_doctors)
         self.green_corpsman_resource_definition = simpy.Resource(self.env, capacity = VariablesAndParameters.number_of_green_dedicated_corpsmen)
         self.black_corpsman_resource_definition = simpy.Resource(self.env, capacity = VariablesAndParameters.number_of_black_dedicated_corpsmen)
+        #A Note On PriorityResource vs. Resource
+        #Red and Yellow care personnel are marked as Priority as Red and Yellow triage colored Marines take priority.
 
         #Locations
         self.main_bds_resource_definition = simpy.PriorityResource(self.env, capacity = VariablesAndParameters.main_bds_maximum_occupancy)
@@ -415,12 +474,15 @@ class System:
         self.auxillary_treatment_area_resource_definition = simpy.Resource(self.env, capacity = VariablesAndParameters.auxillary_treatment_area_maximum_occupancy)
         self.other_location_resource_definition = simpy.Resource(self.env, capacity = VariablesAndParameters.other_location_maximum_occupancy)
 
+    #Creates A Marine And Starts Triage Process
     def marine_generator(self):
         while VariablesAndParameters.run_number < VariablesAndParameters.number_of_runs:
             marine = Marine()
             yield self.env.process(self.triage(marine))
     
+    #Triage Process
     def triage(self, marine):
+        #RED TRIAGE PROCESS
         if marine.color == "Red":
             #MOVE TO MAIN BDS
             red_main_bds_location_timer_start = self.env.now
@@ -476,6 +538,7 @@ class System:
                 Track.red_dataframe.loc[marine.id] = [red_main_bds_location_elapsed_time, red_doctor_wait_elapsed_time, red_doctor_care_elapsed_time]
                 Track.simplified_dataframe.loc[marine.id] = [marine.color, red_main_bds_location_elapsed_time, red_doctor_wait_elapsed_time, red_doctor_care_elapsed_time]
         
+        #YELLOW TRIAGE PROCESS
         if marine.color == "Yellow":
             #MOVE TO HOLDING AREA
             #Start Yellow Location Timer
@@ -532,6 +595,7 @@ class System:
                 Track.yellow_dataframe.loc[marine.id] = [yellow_holding_area_location_elapsed_time, yellow_doctor_wait_elapsed_time, yellow_doctor_care_elapsed_time]
                 Track.simplified_dataframe.loc[marine.id] = [marine.color, yellow_holding_area_location_elapsed_time, yellow_doctor_wait_elapsed_time, yellow_doctor_care_elapsed_time]
 
+        #GREEN TRIAGE PROCESS
         if marine.color == "Green":
             #MOVE TO AUXILLARY TREATMENT AREA
             #Start Green Location Timer
@@ -588,6 +652,8 @@ class System:
                 Track.green_dataframe.loc[marine.id] = [green_aux_treatment_location_elapsed_time, green_corpsman_wait_elapsed_time, green_corpsman_care_elapsed_time]
                 Track.simplified_dataframe.loc[marine.id] = [marine.color, green_aux_treatment_location_elapsed_time, green_corpsman_wait_elapsed_time, green_corpsman_care_elapsed_time]
 
+        #BLACK
+        #TRIAGE PROCESS
         if marine.color == "Black":
             #MOVE TO OTHER LOCATION
             #Start Black Location Timer
@@ -646,11 +712,12 @@ class System:
 
         VariablesAndParameters.run_number += 1
 
+#RUNNING THE MODEL
 model = System()
 model.env.process(model.marine_generator())
 model.env.run(until=VariablesAndParameters.simulation_time)
 
-#DATA
+#OUTPUTTING DATA
 print("RED DATAFRAME")
 print(Track.red_dataframe)
 print("YELLOW DATAFRAME")
@@ -662,10 +729,10 @@ print(Track.black_dataframe)
 print("ALL DATA")
 print(Track.simplified_dataframe)
 
-#CALCULATED DATA
+#OUTPUTTING CALCULATED DATA
 print(Calculations.get_data())
 
-#GRAPHS
+#OUTPUTTING GRAPHS
 Graph.priority_totals_graph()
 Graph.experience_by_individual_marine_graph()
 Graph.average_experience_by_triage_color()
