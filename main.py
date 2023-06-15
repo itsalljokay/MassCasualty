@@ -249,12 +249,111 @@ class Graph:
         
         pyplot.savefig("outputs/graphs/"+filename)
 
-"""
-        "Triage Experience by Individual Marine": (Track.simplified_dataframe, "line", "triage_by_marine.png"),
-        "Average Experience by Triage Color": (all_averages, "line", "average_by_triage_color.png"),
-        "Average Experience Regardless of Triage Color": (overall_averages, "line", "average_regardless_of_triage_color.png")
-"""
+    def average_experience_by_triage_color():
+        filename = "average_experience_by_triage_color.png"
+        color_mapping = {
+            "Red": "red",
+            "Yellow": "yellow",
+            "Green": "green",
+            "Black": "black"
+        }
 
+        fig, ax1 = pyplot.subplots()
+        ax2 = ax1.twinx()
+
+        time_categories = ["Time To Location", "Waiting For Care", "Care Time"]
+        y_positions = numpy.arange(len(time_categories))
+
+        annotated_positions = set()
+
+        for triage_color, row in Calculations.all_averages.iterrows():
+            time_values = row[time_categories]
+            
+            # Check for NaN values in time_values
+            if any(pandas.isna(time_values)):
+                continue  # Skip this iteration if any value is NaN
+            
+            # Plot the dots
+            ax1.plot(time_categories, time_values, marker="o", color=color_mapping.get(triage_color, "black"))
+            
+            # Plot the lines
+            ax1.plot(time_categories, time_values, color=color_mapping.get(triage_color, "black"))
+            
+            # Add value annotation for each dot except the last one (Care Time)
+            for i in range(len(time_categories) - 1):
+                x_pos = time_categories[i]
+                y_pos = time_values[i]
+                value = f"{y_pos:.2f}"
+                
+                # Check if position is already annotated
+                if (x_pos, y_pos) in annotated_positions:
+                    continue
+                
+                ax1.annotate(value, (x_pos, y_pos), textcoords="offset points", xytext=(0, 10), ha="center")
+                annotated_positions.add((x_pos, y_pos))
+            
+            # Skip value annotation for the last dot (Care Time)
+
+        ax1.set_xlabel("Triage Color")
+        ax1.set_ylabel("Time")
+        ax2.set_ylabel("Time")
+        ax1.set_title("Average Marine Experience by Triage Color")
+        ax1.set_xticks(y_positions)
+        ax1.set_xticklabels(time_categories)
+
+        # Set the desired number of intervals and the interval size for the y-axis
+        num_intervals = 10
+        interval_size = 5
+
+        # Set the y-axis ticks and labels for both left and right y-axes
+        y_ticks = numpy.arange(0, num_intervals * interval_size + interval_size, interval_size)
+        ax1.set_yticks(y_ticks)
+        ax2.set_yticks(y_ticks)
+        ax1.set_yticklabels(y_ticks)
+        ax2.set_yticklabels(y_ticks)
+        
+        pyplot.savefig("outputs/graphs/"+filename)
+
+    def average_experience_regardless_of_color():
+        filename = "average_experience_regardless_of_color.png"
+        fig, ax1 = pyplot.subplots()
+        ax2 = ax1.twinx()
+
+        time_categories = ["Time To Location", "Waiting For Care", "Care Time"]
+        y_positions = numpy.arange(len(time_categories))
+
+        overall_average = Calculations.overall_averages.loc["MEAN", time_categories]
+
+        ax1.plot(time_categories, overall_average, marker="o", color="black")
+        ax1.plot(time_categories, overall_average, color="black")
+
+        ax1.set_xlabel("Average Marine Regardless of Triage Color")
+        ax1.set_ylabel("Time")
+        ax2.set_ylabel("Time")
+        ax1.set_title("Average Marine Experience Regardless of Triage Color")
+        ax1.set_xticks(y_positions)
+        ax1.set_xticklabels(time_categories)
+
+        # Set the desired number of intervals and the interval size for the y-axis
+        num_intervals = 10
+        interval_size = 5
+
+        # Set the y-axis ticks and labels for both left and right y-axes
+        y_ticks = numpy.arange(0, num_intervals * interval_size + interval_size, interval_size)
+        ax1.set_yticks(y_ticks)
+        ax2.set_yticks(y_ticks)
+        ax1.set_yticklabels(y_ticks)
+        ax2.set_yticklabels(y_ticks)
+
+        # Add value annotation for each dot
+        for i in range(len(time_categories)):
+            x_pos = time_categories[i]
+            y_pos = overall_average[i]
+            value = f"{y_pos:.2f}"
+            ax1.annotate(value, (x_pos, y_pos), textcoords="offset points", xytext=(0, 10), ha="center")
+
+
+        pyplot.savefig("outputs/graphs/"+filename)
 
 class System:
     def __init__(self):
@@ -523,5 +622,7 @@ print(Calculations.get_data())
 #GRAPHS
 Graph.priority_totals_graph()
 Graph.experience_by_individual_marine_graph()
+Graph.average_experience_by_triage_color()
+Graph.average_experience_regardless_of_color()
 
 print(Calculations.all_averages)
