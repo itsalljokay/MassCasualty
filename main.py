@@ -321,8 +321,8 @@ class Graph:
         
         #Set More Graph Details
         ax1.set_xlabel("Triage Color")
-        ax1.set_ylabel("Time")
-        ax2.set_ylabel("Time")
+        ax1.set_ylabel("Time (Minutes)")
+        ax2.set_ylabel("Time (Minutes)")
         ax1.set_title("Experience By Individual Marine")
         ax1.set_xticks(y_positions)
         ax1.set_xticklabels(time_categories)
@@ -386,8 +386,8 @@ class Graph:
 
         #Set More Graph Details
         ax1.set_xlabel("Triage Color")
-        ax1.set_ylabel("Time")
-        ax2.set_ylabel("Time")
+        ax1.set_ylabel("Time (Minutes)")
+        ax2.set_ylabel("Time (Minutes)")
         ax1.set_title("Average Marine Experience by Triage Color")
         ax1.set_xticks(y_positions)
         ax1.set_xticklabels(time_categories)
@@ -422,8 +422,8 @@ class Graph:
 
         #Set More Graph Details
         ax1.set_xlabel("Average Marine Regardless of Triage Color")
-        ax1.set_ylabel("Time")
-        ax2.set_ylabel("Time")
+        ax1.set_ylabel("Time (Minutes)")
+        ax2.set_ylabel("Time (Minutes)")
         ax1.set_title("Average Marine Experience Regardless of Triage Color")
         ax1.set_xticks(y_positions)
         ax1.set_xticklabels(time_categories)
