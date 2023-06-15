@@ -1,31 +1,75 @@
+"""
+MASS CASUALTY TRIAGE SIMULATION FOR MERCY-CLASS SHIPS
+By: 2ndLt Jessi Lanum
+
+PROBLEM: Mass casualty triage in a Pacific-like environment has not been done in theater since World War II. 
+PURPOSE: Support Force Design efforts by demonstrating a framework for mass casualty triage simulations.
+OBJECTIVE: Provide quantative data output and analysis for mass casualty triage situations fielded by Mercy-class ships.
+
+LAST UPDATED: 15 JUN 23
+"""
+
 #IMPORTS
+"""
+Purpose: Import all external packages and libraries we need for this project.
+o   OS is to interact with the operating system. We will use it to create folder structure to store our outputs.
+    https://docs.python.org/3/library/os.html
+o   Numpy is a scientific computing package for math.
+    https://numpy.org/
+o   Simpy is a discrete event simulation framework.
+    https://simpy.readthedocs.io/en/latest/
+o   Pandas is a data analysis library.
+    https://pandas.pydata.org/
+o   Matplotlib is a visualizations library. Specifically, pyplot for 2D graphs in Python.
+    https://matplotlib.org/
+"""
 import os
 import numpy
 import simpy
 import pandas
 from matplotlib import pyplot
-from matplotlib.collections import LineCollection
 
-#CREATE FILE STRUCTURE TO STORE THINGS
+#FILE STRUCTURE
+"""
+Purpose: Create the folder structure where we will store our outputs.
+"""
+#Get Current Working Directory
 current_location = os.getcwd()
+#All The Folders/Directories We Want To Put Outputs
 directories = {
     "outputs",
     "outputs/csv",
     "outputs/graphs"
 
 }
+#If That Folder/Directory Doesn't Already Exist, Make It
 for directory in directories:
     if not os.path.exists(directory):
         os.makedirs(directory)
 
+#VARIABLES AND PARAMETERS
+"""
+Purpose: All the variables and parameters that are needed throughout the program (globally).
+"""
 class VariablesAndParameters:
     #Sim Details
-    warm_up = 0
+    warm_up = 1
     number_of_runs = 10
     run_number = 0
     duration_of_simulation_in_minutes = 10
     simulation_time = (duration_of_simulation_in_minutes * 60)
-    #SIMULATION TIME IS IN SECONDS
+    #A Note On Warm Up Variable:
+    #For event simulations, it's important to include some warm-up runs so that they data you glean is as accurate to
+    #the real situation as possible. Warmups help eliminate accidental start-up biases.
+    
+    #A Note On Simulation Duration:
+    #This is how long each run will take. Set this accordingly to your scenario. Designed to keep from encountering an
+    #accidental "we don't have all day!" type of situation.
+    
+    #A Note On Simulation Time:
+    #Simulation time is technically unitless. This means we pick something and stick to it. For this simulation, seconds
+    #have been chosen as it is an appropriate unit of measurement for a combat triage situation.
+    #Read more here: 
 
     #People Involved
     #We are calculating how many Marines we can handle before resources are swamped or strained. Therefore, marine_counter starts and stays at 0.
@@ -101,7 +145,7 @@ class Track:
         "Waiting For Care": [],
         "Care Time": []
     })
-    black_dataframe.index.name = "Marine ID"
+    simplified_dataframe.index.name = "Marine ID"
 
 class Calculations:
     #DATAFRAMES
@@ -139,8 +183,8 @@ class Calculations:
     
         #REGARDLESS OF COLOR
         #"The average Marine regardless of triage color spends this amount of time..."
-        Calculations.overall_averages["MEAN"] = Calculations.overall_averages.mean(axis=1)
-        Calculations.overall_averages.loc["MEAN"] = Calculations.overall_averages.mean()
+        Calculations.overall_averages["MEAN"] = Calculations.overall_averages.mean(axis=1, numeric_only=True)
+        Calculations.overall_averages.loc["MEAN"] = Calculations.overall_averages.mean(numeric_only=True)
         Calculations.overall_averages.to_csv("outputs/csv/average_regardless_of_triage_color.csv")
 
 
@@ -158,8 +202,6 @@ class Calculations:
         return Calculations.red_averages, Calculations.yellow_averages, Calculations.green_averages, Calculations.black_averages, Calculations.overall_averages, Calculations.priority_count, Calculations.all_averages
 
 class Graph:
-    #POTENTIALLY NEEDED
-    #priority_count.drop(columns="Triage Color")
     def priority_totals_graph():
         priority_count = Calculations.priority_count
         fig, ax = pyplot.subplots()
@@ -430,8 +472,9 @@ class System:
             print("Red Care Elapsed Time: ", red_doctor_care_elapsed_time)
             
             #ADD TO DATA
-            Track.red_dataframe.loc[marine.id] = [red_main_bds_location_elapsed_time, red_doctor_wait_elapsed_time, red_doctor_care_elapsed_time]
-            Track.simplified_dataframe.loc[marine.id] = [marine.color, red_main_bds_location_elapsed_time, red_doctor_wait_elapsed_time, red_doctor_care_elapsed_time]
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.red_dataframe.loc[marine.id] = [red_main_bds_location_elapsed_time, red_doctor_wait_elapsed_time, red_doctor_care_elapsed_time]
+                Track.simplified_dataframe.loc[marine.id] = [marine.color, red_main_bds_location_elapsed_time, red_doctor_wait_elapsed_time, red_doctor_care_elapsed_time]
         
         if marine.color == "Yellow":
             #MOVE TO HOLDING AREA
@@ -485,8 +528,9 @@ class System:
             print("Yellow Care Elapsed Time: ", yellow_doctor_care_elapsed_time)
 
             #ADD TO DATA
-            Track.yellow_dataframe.loc[marine.id] = [yellow_holding_area_location_elapsed_time, yellow_doctor_wait_elapsed_time, yellow_doctor_care_elapsed_time]
-            Track.simplified_dataframe.loc[marine.id] = [marine.color, yellow_holding_area_location_elapsed_time, yellow_doctor_wait_elapsed_time, yellow_doctor_care_elapsed_time]
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.yellow_dataframe.loc[marine.id] = [yellow_holding_area_location_elapsed_time, yellow_doctor_wait_elapsed_time, yellow_doctor_care_elapsed_time]
+                Track.simplified_dataframe.loc[marine.id] = [marine.color, yellow_holding_area_location_elapsed_time, yellow_doctor_wait_elapsed_time, yellow_doctor_care_elapsed_time]
 
         if marine.color == "Green":
             #MOVE TO AUXILLARY TREATMENT AREA
@@ -540,8 +584,9 @@ class System:
             print("Green Care Elapsed Time: ", green_corpsman_care_elapsed_time)
 
             #ADD TO DATA
-            Track.green_dataframe.loc[marine.id] = [green_aux_treatment_location_elapsed_time, green_corpsman_wait_elapsed_time, green_corpsman_care_elapsed_time]
-            Track.simplified_dataframe.loc[marine.id] = [marine.color, green_aux_treatment_location_elapsed_time, green_corpsman_wait_elapsed_time, green_corpsman_care_elapsed_time]
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.green_dataframe.loc[marine.id] = [green_aux_treatment_location_elapsed_time, green_corpsman_wait_elapsed_time, green_corpsman_care_elapsed_time]
+                Track.simplified_dataframe.loc[marine.id] = [marine.color, green_aux_treatment_location_elapsed_time, green_corpsman_wait_elapsed_time, green_corpsman_care_elapsed_time]
 
         if marine.color == "Black":
             #MOVE TO OTHER LOCATION
@@ -595,8 +640,9 @@ class System:
             print("Black Care Elapsed Time: ", black_corpsman_care_elapsed_time)
 
             #ADD TO DATA
-            Track.black_dataframe.loc[marine.id] = [black_other_location_elapsed_time, black_corpsman_wait_elapsed_time, black_corpsman_care_elapsed_time]
-            Track.simplified_dataframe.loc[marine.id] = [marine.color, black_other_location_elapsed_time, black_corpsman_wait_elapsed_time, black_corpsman_care_elapsed_time]
+            if VariablesAndParameters.run_number > VariablesAndParameters.warm_up:
+                Track.black_dataframe.loc[marine.id] = [black_other_location_elapsed_time, black_corpsman_wait_elapsed_time, black_corpsman_care_elapsed_time]
+                Track.simplified_dataframe.loc[marine.id] = [marine.color, black_other_location_elapsed_time, black_corpsman_wait_elapsed_time, black_corpsman_care_elapsed_time]
 
         VariablesAndParameters.run_number += 1
 
@@ -624,5 +670,3 @@ Graph.priority_totals_graph()
 Graph.experience_by_individual_marine_graph()
 Graph.average_experience_by_triage_color()
 Graph.average_experience_regardless_of_color()
-
-print(Calculations.all_averages)
