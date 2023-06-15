@@ -50,33 +50,33 @@ class Marine:
 class Track:
     #RED DATA
     red_dataframe = pandas.DataFrame({
-        "Time To Location": [],
-        "Waiting For Care": [],
-        "Care Time": []
+        "Time To Main Battle Dressing Station": [],
+        "Waiting For Red Doctor": [],
+        "Time With Red Doctor": []
     })
     red_dataframe.index.name = "Marine ID"
 
     #YELLOW DATA
     yellow_dataframe = pandas.DataFrame({
-        "Time To Location": [],
-        "Waiting For Care": [],
-        "Care Time": []
+        "Time To Holding Area": [],
+        "Waiting For Yellow Doctor": [],
+        "Time With Yellow Doctor": []
     })
     yellow_dataframe.index.name = "Marine ID"
 
     #GREEN DATA
     green_dataframe = pandas.DataFrame({
-        "Time To Location": [],
-        "Waiting For Care": [],
-        "Care Time": []
+        "Time To Auxillary Holding Area": [],
+        "Waiting For Green Corpsman": [],
+        "Time With Green Corpsman": []
     })
     green_dataframe.index.name = "Marine ID"
 
     #BLACK DATA
     black_dataframe = pandas.DataFrame({
-        "Time To Location": [],
-        "Waiting For Care": [],
-        "Care Time": []
+        "Time To Other Location": [],
+        "Waiting For Black Corpsman": [],
+        "Time With Black Corpsman": []
     })
     black_dataframe.index.name = "Marine ID"
 
@@ -95,34 +95,36 @@ class Calculations:
         red_averages = Track.red_dataframe
         red_averages["MEAN"] = red_averages.mean(axis=1)
         red_averages.loc["MEAN"] = red_averages.mean()
+        red_averages.to_csv("outputs/csv/red_averages_seperate.csv")
 
         yellow_averages = Track.yellow_dataframe
         yellow_averages["MEAN"] = yellow_averages.mean(axis=1)
         yellow_averages.loc["MEAN"] = yellow_averages.mean()
+        yellow_averages.to_csv("outputs/csv/yellow_averages_seperate.csv")
 
         green_averages = Track.green_dataframe
         green_averages["MEAN"] = green_averages.mean(axis=1)
         green_averages.loc["MEAN"] = green_averages.mean()
+        green_averages.to_csv("outputs/csv/green_averages_seperate.csv")
 
         black_averages = Track.black_dataframe
         black_averages["MEAN"] = black_averages.mean(axis=1)
         black_averages.loc["MEAN"] = black_averages.mean()
+        black_averages.to_csv("outputs/csv/black_averages_seperate.csv")
 
         
         #BY COLOR
-        
-        all_averages = pandas.DataFrame({
-        "Time To Location": [],
-        "Waiting For Care": [],
-        "Care Time": []
-    })
-        all_averages.loc["RED"] = red_averages["MEAN"]
+        #"The average [TRIAGE COLOR] Marine spends this amount of time..."
+        all_averages = Track.simplified_dataframe.groupby("Triage Color").mean()
+        all_averages.to_csv("outputs/csv/all_averages_combined.csv")
     
-        
         #REGARDLESS OF COLOR
+        #"The average Marine regardless of triage color spends this amount of time..."
         overall_averages = Track.simplified_dataframe
         overall_averages["MEAN"] = overall_averages.mean(axis=1)
         overall_averages.loc["MEAN"] = overall_averages.mean()
+        overall_averages.to_csv("outputs/csv/overall_averages.csv")
+
 
         #FIND PRIORITY COUNTS
         priority_count = pandas.DataFrame()
@@ -133,10 +135,10 @@ class Calculations:
         black_priority_total = len(Track.black_dataframe.index)
 
         priority_count["Colors"] = ["Red", "Yellow", "Green", "Black"]
-        priority_count["Totals"] = [red_priority_total, yellow_priority_total, green_priority_total, black_priority_total]  
+        priority_count["Totals"] = [red_priority_total, yellow_priority_total, green_priority_total, black_priority_total]
+        priority_count.to_csv("outputs/csv/priority_count.csv")  
 
-        return red_averages, yellow_averages, green_averages, black_averages, all_averages, overall_averages, priority_count
-
+        return red_averages, yellow_averages, green_averages, black_averages, overall_averages, priority_count, all_averages
 """
 class Graph:
     def graph(red_averages, yellow_averages, green_averages, black_averages, all_averages, overall_averages, priority_count):
