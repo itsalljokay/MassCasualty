@@ -4,6 +4,7 @@ import numpy
 import simpy
 import pandas
 from matplotlib import pyplot
+from matplotlib.collections import LineCollection
 
 #CREATE FILE STRUCTURE TO STORE THINGS
 current_location = os.getcwd()
@@ -133,7 +134,7 @@ class Calculations:
         
         #BY COLOR
         #"The average [TRIAGE COLOR] Marine spends this amount of time..."
-        Calculations.all_averages.groupby("Triage Color").mean()
+        Calculations.all_averages = Calculations.all_averages.groupby("Triage Color").mean()
         Calculations.all_averages.to_csv("outputs/csv/average_by_triage_color.csv")
     
         #REGARDLESS OF COLOR
@@ -159,7 +160,7 @@ class Calculations:
 class Graph:
     #POTENTIALLY NEEDED
     #priority_count.drop(columns="Triage Color")
-    def priority_totals():
+    def priority_totals_graph():
         priority_count = Calculations.priority_count
         fig, ax = pyplot.subplots()
         x_labels = ["Red", "Yellow", "Green", "Black"]
@@ -184,33 +185,15 @@ class Graph:
 
         pyplot.savefig("outputs/graphs/"+filename)
 
-    def graph(overall_averages, priority_count, all_averages):
-        all_averages, overall_averages, priority_count = Calculations.get_data()
-        
-        #GRAPHS
+    def experience_by_individual_marine_graph():
+            
 
-        graphs = {
-        "Priority Totals": (priority_count, "bar", "priority_count.png"),
+"""
         "Triage Experience by Individual Marine": (Track.simplified_dataframe, "line", "triage_by_marine.png"),
         "Average Experience by Triage Color": (all_averages, "line", "average_by_triage_color.png"),
         "Average Experience Regardless of Triage Color": (overall_averages, "line", "average_regardless_of_triage_color.png")
+"""
 
-        }
-
-        for title, (dataframe, plot_type, image_filename) in graphs.items():
-            print(title)
-            Graph.plot_and_save_graph(dataframe, title, plot_type, image_filename)
-
-    def plot_and_save_graph(dataframe, title, plot_type, image_filename):
-        if plot_type == "bar":
-            fig, ax = pyplot.subplots()
-            x_labels = []
-        #elif plot_type == "histogram":
-        else:
-            print("Invalid plot type!")
-        
-        pyplot.title(title)
-        pyplot.savefig("outputs/graphs/"+image_filename)
 
 class System:
     def __init__(self):
@@ -477,4 +460,7 @@ print(Track.simplified_dataframe)
 print(Calculations.get_data())
 
 #GRAPHS
-Graph.priority_totals()
+Graph.priority_totals_graph()
+Graph.experience_by_individual_marine_graph()
+
+print(Calculations.all_averages)
