@@ -186,7 +186,68 @@ class Graph:
         pyplot.savefig("outputs/graphs/"+filename)
 
     def experience_by_individual_marine_graph():
+        filename = "experience_by_individual.png"
+        color_mapping = {
+            "Red": "red",
+            "Yellow": "yellow",
+            "Green": "green",
+            "Black": "black"
+        }
+
+        fig, ax1 = pyplot.subplots()
+        ax2 = ax1.twinx()
+
+        time_categories = ["Time To Location", "Waiting For Care", "Care Time"]
+        y_positions = numpy.arange(len(time_categories))
+
+        annotated_positions = set()
+
+        for row in Track.simplified_dataframe.iterrows():
+            triage_color = row[1]["Triage Color"]
+            time_values = [row[1][category] for category in time_categories]
             
+            # Check for NaN values in triage_color or time_values
+            if pandas.isna(triage_color) or any(pandas.isna(time_values)):
+                continue  # Skip this iteration if any value is NaN
+            
+            # Plot the dots
+            ax1.plot(time_categories, time_values, marker="o", color=color_mapping.get(triage_color, "black"))
+            
+            # Plot the lines
+            ax1.plot(time_categories, time_values, color=color_mapping.get(triage_color, "black"))
+            
+            # Add value annotation for each dot except the last one (Care Time)
+            for i in range(len(time_categories) - 1):
+                x_pos = time_categories[i]
+                y_pos = time_values[i]
+                value = f"{y_pos:.2f}"
+                
+                # Check if position is already annotated
+                if (x_pos, y_pos) in annotated_positions:
+                    continue
+                
+                ax1.annotate(value, (x_pos, y_pos), textcoords="offset points", xytext=(0, 10), ha="center")
+                annotated_positions.add((x_pos, y_pos))
+
+        ax1.set_xlabel("Triage Color")
+        ax1.set_ylabel("Time")
+        ax2.set_ylabel("Time")
+        ax1.set_title("Experience By Individual Marine")
+        ax1.set_xticks(y_positions)
+        ax1.set_xticklabels(time_categories)
+
+        # Set the desired number of intervals and the interval size for the y-axis
+        num_intervals = 10
+        interval_size = 5
+
+        # Set the y-axis ticks and labels for both left and right y-axes
+        y_ticks = numpy.arange(0, num_intervals * interval_size + interval_size, interval_size)
+        ax1.set_yticks(y_ticks)
+        ax2.set_yticks(y_ticks)
+        ax1.set_yticklabels(y_ticks)
+        ax2.set_yticklabels(y_ticks)
+        
+        pyplot.savefig("outputs/graphs/"+filename)
 
 """
         "Triage Experience by Individual Marine": (Track.simplified_dataframe, "line", "triage_by_marine.png"),
