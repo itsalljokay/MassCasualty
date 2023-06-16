@@ -231,8 +231,6 @@ class Calculations:
         Calculations.priority_count["Totals"] = [red_priority_total, yellow_priority_total, green_priority_total, black_priority_total]
         Calculations.priority_count.to_csv("outputs/csv/priority_count.csv")  
 
-        return Calculations.red_averages, Calculations.yellow_averages, Calculations.green_averages, Calculations.black_averages, Calculations.overall_averages, Calculations.priority_count, Calculations.all_averages
-
 #GRAPHING DATA
 """
 Purpose: Design and print graphs of our collected and calculated data.
