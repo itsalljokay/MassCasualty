@@ -22,7 +22,7 @@ Basic commenting is provided within the main.py program file.
 
 ## Contributing
 
-Forks are welcome. This was my first project in Python, and as such being able to see better practices, improvements, and alternate methods is gladly received.
+Forks are welcome. This was my first project in Python, and as such, being able to see better practices, improvements, and alternate methods is gladly received.
 
 
 ## License
