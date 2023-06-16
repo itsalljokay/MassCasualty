@@ -254,9 +254,8 @@ class Graph:
         #Annotate Each Bar With Its Value
         for bar in bars:
             height = bar.get_height()
-            height = bar.get_height()
-            x = bar.get_x()
             width = bar.get_width()
+            x = bar.get_x()
             ax.annotate(height,
                         xy=(x + width / 2, height / 2),  # Position annotation in the middle of the bar body
                         xytext=(0, 0),  # No offset for text position
