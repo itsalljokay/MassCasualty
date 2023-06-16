@@ -16,7 +16,7 @@ Setup your environment to be able to run Python files, as well has have the nece
 
 Basic commenting is provided within the main.py program file. 
 
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Emblem_of_the_United_States_Marine_Corps.svg/768px-Emblem_of_the_United_States_Marine_Corps.svg.png" width="40" height="40"> ***For more extensive references and walkthroughs on the code and code structure, please refer to the [Wiki](https://github.com/itsalljokay/MassCasualty/wiki).***<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Emblem_of_the_United_States_Marine_Corps.svg/768px-Emblem_of_the_United_States_Marine_Corps.svg.png" width="40" height="40">
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Emblem_of_the_United_States_Marine_Corps.svg/768px-Emblem_of_the_United_States_Marine_Corps.svg.png" width="20" height="20"> ***For more extensive references and walkthroughs on the code and code structure, please refer to the [Wiki](https://github.com/itsalljokay/MassCasualty/wiki).***<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Emblem_of_the_United_States_Marine_Corps.svg/768px-Emblem_of_the_United_States_Marine_Corps.svg.png" width="20" height="20">
 
      The Wiki is written with the intended audience of a Marine, unfamiliar with programming or simulation.
 
