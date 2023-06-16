@@ -92,7 +92,7 @@ class VariablesAndParameters:
     #Location Occupancy
     main_bds_maximum_occupancy = 92
     holding_area_maximum_occupancy = 280
-    auxillary_treatment_area_maximum_occupancy = 370
+    auxiliary_treatment_area_maximum_occupancy = 370
     other_location_maximum_occupancy = 270
     #A Note On Occupancy:
     #See note on Dedicated Personnel.
@@ -103,8 +103,8 @@ class VariablesAndParameters:
     red_stdev_doctor_main_bds_consultation = 1
     yellow_mean_doctor_holding_area_consultation = 3
     yellow_stdev_doctor_holding_area_consultation = 1
-    green_mean_corpsman_auxillary_treatment_area_consultation = 2
-    green_stdev_corpsman_auxillary_treatment_area_consultation = 1
+    green_mean_corpsman_auxiliary_treatment_area_consultation = 2
+    green_stdev_corpsman_auxiliary_treatment_area_consultation = 1
     black_mean_corpsman_other_location_consultation = 2
     black_stdev_corpsman_other_location_consultation = 1
     #A Note On Durations
@@ -155,7 +155,7 @@ class Track:
 
     #GREEN DATA
     green_dataframe = pandas.DataFrame({
-        "Time To Auxillary Holding Area": [],
+        "Time To Auxiliary Holding Area": [],
         "Waiting For Green Corpsman": [],
         "Time With Green Corpsman": []
     })
@@ -471,7 +471,7 @@ class System:
         #Locations
         self.main_bds_resource_definition = simpy.PriorityResource(self.env, capacity = VariablesAndParameters.main_bds_maximum_occupancy)
         self.holding_area_resource_definition = simpy.PriorityResource(self.env, capacity = VariablesAndParameters.holding_area_maximum_occupancy)
-        self.auxillary_treatment_area_resource_definition = simpy.Resource(self.env, capacity = VariablesAndParameters.auxillary_treatment_area_maximum_occupancy)
+        self.auxiliary_treatment_area_resource_definition = simpy.Resource(self.env, capacity = VariablesAndParameters.auxiliary_treatment_area_maximum_occupancy)
         self.other_location_resource_definition = simpy.Resource(self.env, capacity = VariablesAndParameters.other_location_maximum_occupancy)
 
     #Creates A Marine And Starts Triage Process
@@ -597,14 +597,14 @@ class System:
 
         #GREEN TRIAGE PROCESS
         if marine.color == "Green":
-            #MOVE TO AUXILLARY TREATMENT AREA
+            #MOVE TO AUXILIARY TREATMENT AREA
             #Start Green Location Timer
             green_aux_treatment_location_timer_start = self.env.now
             print("Green Location Start Time: ", green_aux_treatment_location_timer_start)
-            #Request Auxillary Treatment Area Location
-            auxillary_treatment_request = self.auxillary_treatment_area_resource_definition.request()
+            #Request Auxiliary Treatment Area Location
+            auxiliary_treatment_request = self.auxiliary_treatment_area_resource_definition.request()
             #Wait Until Request Can Be Fulfilled
-            yield auxillary_treatment_request
+            yield auxiliary_treatment_request
             #End Green Location Timer
             green_aux_treatment_location_timer_end = self.env.now
             print("Green Location End Time: ", green_aux_treatment_location_timer_end)
@@ -612,7 +612,7 @@ class System:
             green_aux_treatment_location_elapsed_time = (green_aux_treatment_location_timer_end - green_aux_treatment_location_timer_start)
             print("Green Location Elapsed Time: ", green_aux_treatment_location_elapsed_time)
             #Give The Resource Back To The System For Another Marine To Use
-            self.auxillary_treatment_area_resource_definition.release(auxillary_treatment_request)
+            self.auxiliary_treatment_area_resource_definition.release(auxiliary_treatment_request)
             
             #WAIT FOR CARE
             #Start Green Corpsman Wait Timer
@@ -636,7 +636,7 @@ class System:
             green_corpsman_care_timer_start = self.env.now
             print("Green Care Start Time: ", green_corpsman_care_timer_start)
             #Calculate How Long Care Will Take
-            green_care_time = numpy.random.lognormal(VariablesAndParameters.green_mean_corpsman_auxillary_treatment_area_consultation, VariablesAndParameters.green_stdev_corpsman_auxillary_treatment_area_consultation)
+            green_care_time = numpy.random.lognormal(VariablesAndParameters.green_mean_corpsman_auxiliary_treatment_area_consultation, VariablesAndParameters.green_stdev_corpsman_auxiliary_treatment_area_consultation)
             print("Green Care Calculated Time: ", green_care_time) 
             #Wait That Amount of Care Time
             yield self.env.timeout(green_care_time)
