@@ -4,7 +4,7 @@ By: 2ndLt Jessi Lanum
 
 PROBLEM: Mass casualty triage in a Pacific-like environment has not been done in theater since World War II. 
 PURPOSE: Support Force Design efforts by demonstrating a framework for mass casualty triage simulations.
-OBJECTIVE: Provide quantative data output and analysis for mass casualty triage situations fielded by Mercy-class ships.
+OBJECTIVE: Provide quantitative data output and analysis for mass casualty triage situations fielded by Mercy-class ships.
 
 LAST UPDATED: 15 JUN 23
 """
