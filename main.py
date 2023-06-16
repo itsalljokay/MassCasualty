@@ -74,14 +74,10 @@ class VariablesAndParameters:
     #Read more here: https://simpy.readthedocs.io/en/latest/topical_guides/environments.html
 
     #People Involved
-    marine_counter = 0
     number_of_red_dedicated_doctors = 281
     number_of_yellow_dedicated_doctors = 260
     number_of_green_dedicated_corpsmen = 239
     number_of_black_dedicated_corpsmen = 239
-    #A Note On Marine Counter:
-    #We are calculating how many Marines we can handle before resources are swamped or strained. marine_counter keeps track of the number
-    #of Marines in the system.
 
     #A Note On Dedicated Personnel:
     #This can be changed to be more accurate as data is available. Current numbers are gleaned from available Internet sources, and guessing
