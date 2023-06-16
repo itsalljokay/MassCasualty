@@ -98,7 +98,6 @@ class VariablesAndParameters:
     #See note on Dedicated Personnel.
 
     #How Long It Takes To Do Things
-    #Gonna want to mess around with a lognormal calculator and see what some acceptable samples could be.
     red_mean_doctor_main_bds_consultation = 4
     red_stdev_doctor_main_bds_consultation = 1
     yellow_mean_doctor_holding_area_consultation = 3
