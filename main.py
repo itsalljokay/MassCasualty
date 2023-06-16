@@ -36,12 +36,12 @@ Purpose: Create the folder structure where we will store our outputs.
 #Get Current Working Directory
 current_location = os.getcwd()
 #All The Folders/Directories We Want To Put Outputs
-directories = {
+directories = [
     "outputs",
     "outputs/csv",
     "outputs/graphs"
 
-}
+]
 #If That Folder/Directory Doesn't Already Exist, Make It
 for directory in directories:
     if not os.path.exists(directory):
