@@ -14,7 +14,7 @@ Setup your environment to be able to run Python files, as well has have the nece
 
 ## Usage
 
-Basic commenting is provided within the main.py program file. 
+Detailed commenting is provided within the main.py program file. 
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Emblem_of_the_United_States_Marine_Corps.svg/768px-Emblem_of_the_United_States_Marine_Corps.svg.png" width="40" height="40">***For more extensive references and walkthroughs please refer to the [Wiki](https://github.com/itsalljokay/MassCasualty/wiki).***<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Emblem_of_the_United_States_Marine_Corps.svg/768px-Emblem_of_the_United_States_Marine_Corps.svg.png" width="40" height="40">
 
