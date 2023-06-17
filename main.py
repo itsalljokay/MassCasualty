@@ -54,9 +54,9 @@ Purpose: All the variables and parameters that are needed throughout the program
 class VariablesAndParameters:
     #Sim Details
     warm_up = 1
-    number_of_runs = 10
+    number_of_runs = 20
     run_number = 0
-    duration_of_simulation_in_minutes = 10
+    duration_of_simulation_in_minutes = 40
     simulation_time = (duration_of_simulation_in_minutes * 60)
     #A Note On Warm Up Variable:
     #For event simulations, it's important to include some warm-up runs so that the data you glean is as accurate to
