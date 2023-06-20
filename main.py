@@ -53,10 +53,10 @@ Purpose: All the variables and parameters that are needed throughout the program
 """
 class VariablesAndParameters:
     #Sim Details
-    warm_up = 1
-    number_of_runs = 20
+    warm_up = 5
+    number_of_runs = 50
     run_number = 0
-    duration_of_simulation_in_minutes = 40
+    duration_of_simulation_in_minutes = 60
     simulation_time = (duration_of_simulation_in_minutes * 60)
     #A Note On Warm Up Variable:
     #For event simulations, it's important to include some warm-up runs so that the data you glean is as accurate to
@@ -193,6 +193,9 @@ class Calculations:
     priority_count = pandas.DataFrame()
 
     def get_data():
+        #OUTPUT ALL DATA WITHOUT CALCULTIONS
+        Track.simplified_dataframe.to_csv("outputs/csv/all_marines.csv")
+        
         #FIND AVERAGES
         Calculations.red_averages["MEAN"] = Calculations.red_averages.mean(axis=1)
         Calculations.red_averages.loc["MEAN"] = Calculations.red_averages.mean()
