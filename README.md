@@ -22,14 +22,26 @@ Detailed commenting is provided within the main.py program file.
 
 ## Output
 
-Sampling of a few output methods using a small sample size for the sake of example.
+Sampling of a few output methods using a small sample size for the sake of example. As such, it is noted that the Time to Location and Time To Care values are zero, as too few Marines were introduced to ilicit strain.
 Please refer to the Wiki for list of all outputs.
 
-<img width="622" alt="example_output_color_experience" src="https://github.com/itsalljokay/MassCasualty/assets/97244213/e3a9eabc-964b-413c-ac60-7fdcbc905631">
+### CSV Of All Marine Data
+<img width="466" alt="all_marine_data" src="https://github.com/itsalljokay/MassCasualty/assets/97244213/37808583-0105-4d1d-8779-5e2e970bd1bb">
 
-<img width="395" alt="example_output_color_averages" src="https://github.com/itsalljokay/MassCasualty/assets/97244213/51864eac-4cbf-4961-90ff-bdef3607fb65">
+### CSV of Triage Averages
+<img width="490" alt="triage_averages" src="https://github.com/itsalljokay/MassCasualty/assets/97244213/55d43d32-d978-4ff0-b73e-8e659c2b3868">
 
-<img width="607" alt="example_output_color_counts_graph" src="https://github.com/itsalljokay/MassCasualty/assets/97244213/fb8f73ff-49da-4efe-bef4-4358e14d6ea3">
+### CSV of Priority Counts
+<img width="156" alt="priority_counts" src="https://github.com/itsalljokay/MassCasualty/assets/97244213/89f952dd-6dbc-4fe0-922f-94f646b5aeaf">
+
+### Graph of All Marine Data
+<img width="619" alt="individuals" src="https://github.com/itsalljokay/MassCasualty/assets/97244213/b0f30355-ab6b-45f1-90d3-7d4dce5f65f1">
+
+### Graph of Triage Averages
+<img width="622" alt="average" src="https://github.com/itsalljokay/MassCasualty/assets/97244213/97bc60ad-721a-4fa8-b641-83314d7802bb">
+
+### Graph of Priority Counts
+<img width="616" alt="counts" src="https://github.com/itsalljokay/MassCasualty/assets/97244213/25f79f8f-ea1f-4355-8f69-5dc1b3e07646">
 
 ## Contributing
 
