@@ -193,9 +193,6 @@ class Calculations:
     priority_count = pandas.DataFrame()
 
     def get_data():
-        #OUTPUT ALL DATA WITHOUT CALCULTIONS
-        Track.simplified_dataframe.to_csv("outputs/csv/all_marines.csv")
-        
         #FIND AVERAGES
         Calculations.red_averages["MEAN"] = Calculations.red_averages.mean(axis=1)
         Calculations.red_averages.loc["MEAN"] = Calculations.red_averages.mean()
@@ -222,7 +219,7 @@ class Calculations:
         #"The average Marine regardless of triage color spends this amount of time..."
         Calculations.overall_averages["MEAN"] = Calculations.overall_averages.mean(axis=1, numeric_only=True)
         Calculations.overall_averages.loc["MEAN"] = Calculations.overall_averages.mean(numeric_only=True)
-        Calculations.overall_averages.to_csv("outputs/csv/average_regardless_of_triage_color.csv")
+        Calculations.overall_averages.to_csv("outputs/csv/all_marines.csv")
 
         #PRIORITY COUNTS
         #"There were x number of Red Marines, x number of Yellow Marines, etc..."
