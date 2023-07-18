@@ -47,6 +47,7 @@ Please refer to the Wiki for list of all outputs.
 
 Forks are welcome. This was my first project in Python, and as such, being able to see better practices, improvements, and alternate methods is gladly received.
 
+I also wrote an article about this project on [Medium](https://medium.com/@jessilanum/simulating-mass-casualty-triage-for-mercy-class-ships-2d95d374e22d). Feel free to discuss, share or interact with this idea on that platform. 
 
 ## License
 
@@ -58,4 +59,5 @@ Forks are welcome. This was my first project in Python, and as such, being able 
 At the time of creation and first usage, this repository represents the best efforts of a 2nd Lieutenant to improve computational science practices within the Marine Corps. For more information about this, please visit below.
 
 - [GitHub](https://github.com/itsalljokay)
+- [Medium](https://medium.com/@jessilanum)
  
